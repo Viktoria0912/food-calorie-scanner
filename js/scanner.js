@@ -1,4 +1,4 @@
-// Camera functionality and food recognition
+// Camera functionality and meat recognition
 let cameraStream = null;
 
 function initCamera() {
@@ -45,30 +45,30 @@ function captureImage() {
     // Get the image data URL
     const imageDataUrl = canvas.toDataURL('image/jpeg');
     
-    // In a real app, we would send this image to a food recognition API
+    // In a real app, we would send this image to a meat recognition API
     // For demo purposes, we'll simulate a response
-    simulateFoodRecognition(imageDataUrl);
+    simulateMeatRecognition(imageDataUrl);
 }
 
-function simulateFoodRecognition(imageUrl) {
+function simulateMeatRecognition(imageUrl) {
     // Simulate API processing time
     showScanningAnimation();
     
     setTimeout(() => {
-        // Dummy food data for demo purposes
-        const foodOptions = [
+        // Meat-focused food data for realistic demo purposes
+        const meatOptions = [
             {
-                name: 'Apple',
-                calories: 95,
-                protein: 0.5,
-                carbs: 25,
-                fat: 0.3,
-                servingSize: '1 medium (182g)',
+                name: 'Beef Steak (Ribeye)',
+                calories: 291,
+                protein: 24.6,
+                carbs: 0,
+                fat: 21.2,
+                servingSize: '100g',
                 vitamins: [
-                    'Vitamin C: 14% DV',
-                    'Vitamin A: 2% DV',
-                    'Potassium: 4% DV',
-                    'Fiber: 4.4g'
+                    'Vitamin B12: 62% DV',
+                    'Zinc: 32% DV',
+                    'Niacin: 30% DV',
+                    'Iron: 14% DV'
                 ],
                 image: imageUrl
             },
@@ -88,32 +88,32 @@ function simulateFoodRecognition(imageUrl) {
                 image: imageUrl
             },
             {
-                name: 'Avocado Toast',
-                calories: 290,
-                protein: 8,
-                carbs: 30,
-                fat: 16,
-                servingSize: '1 slice',
+                name: 'Pork Tenderloin',
+                calories: 143,
+                protein: 26,
+                carbs: 0,
+                fat: 3.5,
+                servingSize: '100g',
                 vitamins: [
-                    'Vitamin K: 25% DV',
-                    'Folate: 20% DV',
-                    'Vitamin C: 15% DV',
-                    'Fiber: 8g'
+                    'Thiamine: 54% DV',
+                    'Selenium: 49% DV',
+                    'Vitamin B6: 28% DV',
+                    'Zinc: 18% DV'
                 ],
                 image: imageUrl
             },
             {
-                name: 'Greek Yogurt',
-                calories: 100,
-                protein: 17,
-                carbs: 6,
-                fat: 0.4,
-                servingSize: '170g',
+                name: 'Turkey Breast',
+                calories: 135,
+                protein: 30,
+                carbs: 0,
+                fat: 0.8,
+                servingSize: '100g',
                 vitamins: [
-                    'Calcium: 20% DV',
-                    'Vitamin B12: 15% DV',
-                    'Phosphorus: 20% DV',
-                    'Riboflavin: 20% DV'
+                    'Niacin: 46% DV',
+                    'Vitamin B6: 31% DV',
+                    'Phosphorus: 26% DV',
+                    'Selenium: 36% DV'
                 ],
                 image: imageUrl
             },
@@ -131,18 +131,84 @@ function simulateFoodRecognition(imageUrl) {
                     'Selenium: 60% DV'
                 ],
                 image: imageUrl
+            },
+            {
+                name: 'Ground Beef (80% lean)',
+                calories: 254,
+                protein: 17.4,
+                carbs: 0,
+                fat: 20.8,
+                servingSize: '100g',
+                vitamins: [
+                    'Vitamin B12: 48% DV',
+                    'Zinc: 36% DV',
+                    'Iron: 15% DV',
+                    'Vitamin B6: 18% DV'
+                ],
+                image: imageUrl
+            },
+            {
+                name: 'Lamb Chop',
+                calories: 294,
+                protein: 25.6,
+                carbs: 0,
+                fat: 21.2,
+                servingSize: '100g',
+                vitamins: [
+                    'Vitamin B12: 51% DV',
+                    'Zinc: 31% DV',
+                    'Niacin: 26% DV',
+                    'Iron: 12% DV'
+                ],
+                image: imageUrl
+            },
+            {
+                name: 'Venison',
+                calories: 158,
+                protein: 30.2,
+                carbs: 0,
+                fat: 3.2,
+                servingSize: '100g',
+                vitamins: [
+                    'Iron: 22% DV',
+                    'Zinc: 23% DV',
+                    'Vitamin B12: 41% DV',
+                    'Niacin: 37% DV'
+                ],
+                image: imageUrl
             }
         ];
         
-        // Randomly select a food item for demo purposes
-        const randomFood = foodOptions[Math.floor(Math.random() * foodOptions.length)];
-        
-        // Show the results
-        window.showResults(randomFood);
+        // Analyze the image and detect what type of meat it is
+        // In a real app, this would use AI to detect the specific meat type
+        analyzeAndDetectMeatType(imageUrl, meatOptions);
     }, 2000);
 }
 
+function analyzeAndDetectMeatType(imageUrl, meatOptions) {
+    // In a real app, this would use computer vision to detect the type of meat
+    // For this demo, we'll randomly select a meat type but with some intelligence
+    
+    console.log('AI analyzing meat type...');
+    
+    // Simulate basic image analysis
+    setTimeout(() => {
+        // For the demo, we'll randomly select from our options
+        // In a real app, this would use AI image recognition
+        const randomIndex = Math.floor(Math.random() * meatOptions.length);
+        const detectedMeat = meatOptions[randomIndex];
+        
+        console.log('Detected meat type:', detectedMeat.name);
+        
+        // Show the results
+        window.showResults(detectedMeat);
+    }, 1000);
+}
+
 function showScanningAnimation() {
-    // In a real app, we could show a loading animation here
-    console.log('Scanning food...');
+    // Animate the scan line
+    console.log('Scanning meat...');
+    
+    // In a real app, we would show an AI scanning animation
+    // and provide real-time feedback on the meat detection process
 }
