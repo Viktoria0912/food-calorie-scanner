@@ -1,16 +1,18 @@
 /* Base Styles */
 :root {
-    --primary-color: #0071e3;
-    --primary-light: #0077ed;
-    --primary-dark: #0068d1;
+    --primary-color: #34c759; /* Apple's green color */
+    --primary-light: #40d866;
+    --primary-dark: #28b14c;
     --secondary-color: #1d1d1f;
     --light-gray: #f5f5f7;
     --medium-gray: #86868b;
     --dark-gray: #424245;
     --white: #ffffff;
+    --success-green: #34c759;
+    --light-green: #e3f9ea;
     --font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-    --border-radius: 12px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-radius: 16px; /* Increased for more modern look */
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -26,6 +28,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    background-color: #fafafa;
 }
 
 img {
@@ -40,10 +43,13 @@ img {
 
 /* Typography */
 h1 {
-    font-size: 48px;
+    font-size: 52px;
     font-weight: 700;
     letter-spacing: -0.015em;
     margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--primary-color), #219653);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 h2 {
@@ -67,7 +73,7 @@ h4 {
 }
 
 .subtitle {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--medium-gray);
     margin-bottom: 32px;
     font-weight: 400;
@@ -75,12 +81,12 @@ h4 {
 
 /* Navigation */
 header {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .navbar {
@@ -93,6 +99,7 @@ header {
 .logo {
     font-weight: 600;
     font-size: 24px;
+    color: var(--primary-color);
 }
 
 .nav-links {
@@ -121,28 +128,31 @@ header {
     color: var(--white);
     border: none;
     border-radius: 980px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);
 }
 
 .primary-btn:hover {
     background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(52, 199, 89, 0.3);
 }
 
 .primary-btn.large {
-    padding: 12px 24px;
+    padding: 14px 28px;
     font-size: 16px;
 }
 
 .secondary-btn {
-    background-color: transparent;
+    background-color: rgba(52, 199, 89, 0.1);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
     border-radius: 980px;
-    padding: 8px 16px;
+    padding: 9px 18px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -150,7 +160,8 @@ header {
 }
 
 .secondary-btn:hover {
-    background-color: rgba(0, 113, 227, 0.05);
+    background-color: rgba(52, 199, 89, 0.15);
+    transform: translateY(-2px);
 }
 
 .close-btn {
@@ -159,14 +170,20 @@ header {
     font-size: 24px;
     cursor: pointer;
     color: var(--medium-gray);
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: var(--secondary-color);
 }
 
 /* Hero Section */
 .hero {
     display: flex;
     align-items: center;
-    padding: 80px 24px;
+    padding: 100px 24px;
     gap: 48px;
+    background: linear-gradient(to bottom, #ffffff, #f5f9f7);
 }
 
 .hero-content {
@@ -180,8 +197,13 @@ header {
 
 .hero-image img {
     max-width: 80%;
-    border-radius: 24px;
+    border-radius: var(--border-radius);
     box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.hero-image img:hover {
+    transform: translateY(-5px) scale(1.02);
 }
 
 /* Scanner Section */
@@ -219,6 +241,7 @@ header {
     overflow: hidden;
     border-radius: var(--border-radius);
     background-color: #000;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
 }
 
 #camera-feed {
@@ -235,7 +258,7 @@ header {
     width: 80%;
     height: 60%;
     border: 2px solid var(--primary-color);
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 .scan-line {
@@ -254,28 +277,34 @@ header {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    width: 64px;
-    height: 64px;
-    background-color: rgba(255, 255, 255, 0.3);
+    width: 72px;
+    height: 72px;
+    background-color: rgba(255, 255, 255, 0.2);
     border: none;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.2s ease;
 }
 
 .capture-btn-inner {
-    width: 56px;
-    height: 56px;
+    width: 62px;
+    height: 62px;
     background-color: var(--white);
     border-radius: 50%;
     transition: all 0.2s ease;
 }
 
+#capture-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+}
+
 #capture-btn:hover .capture-btn-inner {
-    width: 52px;
-    height: 52px;
+    width: 58px;
+    height: 58px;
+    background-color: var(--primary-light);
 }
 
 #cancel-scan {
@@ -306,36 +335,44 @@ header {
     padding: 24px;
     max-height: 90vh;
     overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .results-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .results-header h2 {
     margin-bottom: 0;
     text-align: left;
+    color: var(--primary-color);
 }
 
 .food-image-container {
     width: 100%;
     aspect-ratio: 16/9;
     overflow: hidden;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 #scanned-food-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+#scanned-food-image:hover {
+    transform: scale(1.03);
 }
 
 .food-info {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .nutrition-data {
@@ -349,15 +386,22 @@ header {
     flex: 1;
     min-width: 80px;
     text-align: center;
-    background-color: var(--light-gray);
-    padding: 12px;
-    border-radius: 8px;
+    background-color: var(--light-green);
+    padding: 16px;
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.nutrition-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(52, 199, 89, 0.1);
 }
 
 .nutrition-value {
     font-weight: 600;
-    font-size: 20px;
+    font-size: 24px;
     margin-bottom: 4px;
+    color: var(--primary-color);
 }
 
 .nutrition-label {
@@ -367,6 +411,9 @@ header {
 
 .additional-info {
     margin-bottom: 24px;
+    background-color: #f8f9fa;
+    padding: 16px;
+    border-radius: 12px;
 }
 
 .vitamins-minerals {
@@ -385,38 +432,40 @@ header {
 
 /* Features Section */
 .features-section {
-    padding: 80px 24px;
-    background-color: var(--light-gray);
+    padding: 100px 24px;
+    background-color: var(--light-green);
 }
 
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
+    gap: 32px;
     margin-top: 48px;
 }
 
 .feature-card {
     background-color: var(--white);
     border-radius: var(--border-radius);
-    padding: 24px;
+    padding: 32px;
     box-shadow: var(--shadow);
     text-align: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
 
 .feature-icon {
-    font-size: 40px;
-    margin-bottom: 16px;
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: var(--primary-color);
 }
 
 /* How It Works Section */
 .how-it-works-section {
-    padding: 80px 24px;
+    padding: 100px 24px;
 }
 
 .steps-container {
@@ -426,7 +475,7 @@ header {
 
 .step {
     display: flex;
-    margin-bottom: 48px;
+    margin-bottom: 60px;
     position: relative;
 }
 
@@ -437,7 +486,7 @@ header {
     left: 24px;
     width: 2px;
     height: calc(100% + 24px);
-    background-color: var(--light-gray);
+    background-color: var(--light-green);
 }
 
 .step-number {
@@ -453,6 +502,7 @@ header {
     margin-right: 24px;
     flex-shrink: 0;
     z-index: 1;
+    box-shadow: 0 6px 12px rgba(52, 199, 89, 0.2);
 }
 
 .step-content {
@@ -461,14 +511,18 @@ header {
 
 /* About Section */
 .about-section {
-    padding: 80px 24px;
-    background-color: var(--light-gray);
+    padding: 100px 24px;
+    background-color: var(--light-green);
 }
 
 .about-content {
     max-width: 800px;
     margin: 0 auto;
     text-align: center;
+    background-color: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
 }
 
 .about-content p {
@@ -493,6 +547,7 @@ footer {
     font-weight: 600;
     font-size: 24px;
     margin-bottom: 24px;
+    color: var(--primary-color);
 }
 
 .footer-links {
@@ -521,7 +576,7 @@ footer {
 }
 
 .footer-column a:hover {
-    color: var(--white);
+    color: var(--primary-color);
 }
 
 .copyright {
@@ -540,7 +595,7 @@ footer {
 /* Media Queries */
 @media (max-width: 768px) {
     h1 {
-        font-size: 36px;
+        font-size: 42px;
     }
 
     h2 {
@@ -549,8 +604,8 @@ footer {
 
     .hero {
         flex-direction: column;
-        padding: 40px 24px;
-        gap: 32px;
+        padding: 60px 24px;
+        gap: 40px;
     }
 
     .nav-links {
