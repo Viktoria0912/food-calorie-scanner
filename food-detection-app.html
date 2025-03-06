@@ -3,80 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détection de Nourriture en Temps Réel</title>
+    <title>ScanHealth - Détection de Nourriture</title>
     <!-- TensorFlow.js et COCO-SSD via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         /* Styles intégrés avec design moderne en teintes de bleu */
         :root {
-            --primary-blue: #1e88e5;
-            --light-blue: #64b5f6;
-            --dark-blue: #0d47a1;
-            --bg-blue: #e3f2fd;
-            --text-color: #263238;
+            --primary-color: #1e88e5; /* Bleu primaire */
+            --primary-light: #64b5f6;
+            --primary-very-light: #e3f2fd;
+            --secondary-color: #000000; /* Noir */
+            --background-color: #ffffff;
+            --background-light: #f5f5f7;
+            --text-dark: #1d1d1f;
+            --text-gray: #86868b;
             --border-radius: 12px;
-            --box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
-            --transition: all 0.3s ease;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         body {
-            background-color: var(--bg-blue);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-dark);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1200px;
-            width: 100%;
             margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 0.8s;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: var(--dark-blue);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            margin-bottom: 20px;
-        }
-
-        .video-container {
+            padding: 0;
             position: relative;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-color: var(--background-light);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-light);
+            z-index: -1;
+        }
+
+        .logo-text {
+            font-size: 72px;
+            font-weight: 900;
+            color: rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: -1;
+            letter-spacing: 2px;
+        }
+
+        /* Phone mockup */
+        .phone-container {
+            position: relative;
+            margin: 40px auto;
+            width: 300px;
+        }
+
+        .phone-mockup {
+            width: 100%;
+            border-radius: 36px;
+            box-shadow: var(--shadow);
+            background-color: #000;
+            padding: 12px;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .phone-mockup:hover {
+            transform: scale(1.02) translateY(-5px);
+        }
+
+        .phone-screen {
+            background-color: white;
+            border-radius: 30px;
+            overflow: hidden;
+            aspect-ratio: 9/19.5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phone-notch {
+            width: 50%;
+            height: 25px;
+            background-color: #000;
+            border-radius: 0 0 15px 15px;
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+        }
+
+        /* Scan Circle */
+        .scan-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .scan-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-light);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-circle:before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--primary-color);
+            animation: rotate 2s linear infinite;
+        }
+
+        .scan-circle:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .scan-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            opacity: 0.5;
+        }
+
+        .scan-button {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-top: 20px;
+            border: none;
+            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .scan-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.4);
+        }
+
+        /* Phone interface top bar */
+        .phone-interface-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            font-size: 14px;
+            color: var(--text-dark);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .phone-interface-bottom {
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.02);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .phone-controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .phone-control-button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--text-gray);
+        }
+
+        /* Scanning Results */
+        .scanning-beam {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--primary-light);
+            opacity: 0.6;
+            z-index: 2;
+            animation: scanBeam 3s ease-in-out infinite;
+        }
+
+        /* Plant/Food imagery */
+        .plant-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: -1;
+        }
+
+        .plant-image {
+            height: 200px;
+            opacity: 0.7;
+        }
+
+        /* Metrics display */
+        .metrics-container {
+            display: flex;
+            justify-content: space-between;
             width: 100%;
             max-width: 800px;
-            margin: 0 auto 30px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--box-shadow);
-            animation: fadeIn 1s;
+            margin-top: 30px;
+            padding: 0 20px;
         }
 
-        #video {
-            width: 100%;
-            height: auto;
+        .metric-card {
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 48%;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            color: var(--text-gray);
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            display: flex;
+            align-items: center;
+            font-size: 40px;
+            font-weight: 700;
+        }
+
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-very-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        /* Voice assist panel */
+        .voice-assist {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: var(--background-color);
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-assist:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .voice-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--text-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 20px;
+        }
+
+        .voice-text {
+            font-size: 14px;
+        }
+
+        .voice-text strong {
             display: block;
-            background-color: #000;
+            font-weight: 600;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .btn.secondary {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: none;
+        }
+
+        .btn.secondary:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Video and canvas */
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            object-fit: cover;
+            border-radius: 30px;
         }
 
         #canvas {
@@ -85,220 +406,123 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 2;
         }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            animation: fadeInUp 1s;
-        }
-
-        .btn {
-            background-color: var(--primary-blue);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            box-shadow: var(--box-shadow);
-        }
-
-        .btn:hover {
-            background-color: var(--dark-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(30, 136, 229, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn i {
-            margin-right: 8px;
-            font-size: 1.2rem;
-        }
-
-        .btn.secondary {
-            background-color: transparent;
-            color: var(--primary-blue);
-            border: 2px solid var(--primary-blue);
-        }
-
-        .btn.secondary:hover {
-            background-color: rgba(30, 136, 229, 0.1);
-        }
-
-        .detection-stats {
-            background-color: white;
-            padding: 20px;
+        /* Results display */
+        .results-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 800px;
-            animation: fadeIn 1.2s;
-        }
-
-        .stats-title {
-            font-size: 1.3rem;
-            color: var(--dark-blue);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .stats-title i {
-            margin-right: 10px;
-            color: var(--primary-blue);
-        }
-
-        .detected-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-        }
-
-        .item-card {
-            background-color: var(--bg-blue);
             padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: var(--transition);
+            width: 80%;
+            max-width: 300px;
+            box-shadow: var(--shadow);
+            z-index: 3;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .item-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .results-container.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
 
-        .item-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .item-name {
+        .results-title {
             font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--dark-blue);
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
         }
 
-        .item-confidence {
-            color: var(--primary-blue);
-            font-size: 0.9rem;
+        .food-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .loading-container {
+        .food-name {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .food-name:before {
+            content: attr(data-emoji);
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .food-confidence {
+            font-size: 12px;
+            color: var(--text-gray);
+            background-color: var(--primary-very-light);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* Loading overlay */
+        .loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(255, 255, 255, 0.9);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             z-index: 1000;
         }
 
-        .loading-content {
+        .loading-inner {
             background-color: white;
             padding: 30px;
             border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             text-align: center;
             max-width: 400px;
             width: 80%;
         }
 
         .loading-spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-blue);
+            border: 4px solid rgba(30, 136, 229, 0.2);
             border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
             width: 50px;
             height: 50px;
-            animation: spin 1s linear infinite;
             margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
         }
 
         .loading-text {
-            font-size: 1.2rem;
-            color: var(--dark-blue);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
             margin-bottom: 10px;
         }
 
         .loading-subtext {
-            color: var(--text-color);
-            font-size: 0.9rem;
+            color: var(--text-gray);
+            font-size: 14px;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 50px;
-            background-color: var(--light-blue);
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 20px;
+        /* Animations */
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .hidden {
-            display: none !important;
-        }
-
-        footer {
-            margin-top: auto;
-            padding-top: 30px;
-            text-align: center;
-            color: var(--text-color);
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: var(--primary-blue);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Animation keyframes */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes fadeInDown {
-            from { 
-                opacity: 0; 
-                transform: translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes scanBeam {
+            0%, 100% { top: 0; opacity: 0.7; }
+            50% { top: calc(100% - 4px); opacity: 0.3; }
         }
 
         @keyframes spin {
@@ -306,63 +530,113 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Media queries for responsiveness */
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive design */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+            .metrics-container {
+                flex-direction: column;
+                gap: 15px;
             }
-            
-            .subtitle {
-                font-size: 1rem;
+
+            .metric-card {
+                width: 100%;
             }
-            
-            .detected-items {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+
+            .logo-text {
+                font-size: 50px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Détection de Nourriture</h1>
-            <p class="subtitle">Analyse en temps réel avec TensorFlow.js et COCO-SSD</p>
-        </header>
+        <div class="hero">
+            <div class="hero-bg"></div>
+            <div class="logo-text">SCANHEALTH</div>
 
-        <div class="video-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-        </div>
-
-        <div class="controls">
-            <button id="startBtn" class="btn"><i>▶️</i> Démarrer la caméra</button>
-            <button id="stopBtn" class="btn secondary" disabled><i>⏹️</i> Arrêter</button>
-        </div>
-
-        <div class="detection-stats">
-            <div class="stats-title"><i>📊</i> Aliments détectés</div>
-            <div id="detectedItems" class="detected-items">
-                <div class="item-card">
-                    <div class="item-icon">🔍</div>
-                    <div class="item-name">En attente...</div>
-                    <div class="item-confidence">Démarrez la caméra pour analyser</div>
+            <div class="phone-container">
+                <div class="phone-mockup">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-interface-top">
+                            <div class="app-name">ScanHealth</div>
+                            <div class="time">9:41</div>
+                        </div>
+                        
+                        <div class="scan-container">
+                            <video id="video" autoplay playsinline></video>
+                            <canvas id="canvas"></canvas>
+                            
+                            <div class="scanning-beam"></div>
+                            
+                            <div class="scan-circle">
+                                <div class="scan-icon">⊕</div>
+                            </div>
+                            
+                            <div class="results-container" id="results-container">
+                                <div class="results-title">Aliments Détectés</div>
+                                <div id="food-items"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="phone-interface-bottom">
+                            <div class="phone-controls">
+                                <div class="phone-control-button">⊖</div>
+                                <button class="scan-button" id="scan-button">⊙</button>
+                                <div class="phone-control-button">≡</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="statusBadge" class="status-badge">Prêt</div>
+
+            <div class="metrics-container">
+                <div class="metric-card">
+                    <div class="metric-title">Valeur Nutritionnelle</div>
+                    <div class="metric-value">
+                        <div class="metric-icon">📈</div>
+                        <span id="nutrition-value">0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Teneur en Calories</div>
+                    <div class="metric-value">
+                        <div class="metric-icon">🔬</div>
+                        <span id="calorie-value">Faible</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="btn">Démarrer la caméra</button>
+                <button id="stopBtn" class="btn secondary" disabled>Arrêter</button>
+            </div>
+
+            <div class="plant-container">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMjAwIDMwMCI+PHBhdGggZD0iTTEwMCwzMCBDMTAwLDMwIDgwLDEwMCAxMDAsMTUwIEMxMjAsMjAwIDE4MCwyMzAgMTIwLDI3MCBDODAsMzAwIDQwLDI2MCA2MCwyMDAgQzgwLDE0MCA0MCw5MCA4MCw4MCBDMTIwLDcwIDEwMCwzMCAxMDAsMzAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWU4OGU1IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAwLDMwIEw5NSwyODAgTDEwNSwyODAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFlODhlNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMjgwIiByPSIxNSIgZmlsbD0iI2YwZjhmZiIvPjwvc3ZnPg==" class="plant-image" alt="Plant">
+            </div>
+        </div>
+
+        <div class="voice-assist" id="voice-assist">
+            <div class="voice-icon">🎤</div>
+            <div class="voice-text">
+                <strong>Assistant Vocal</strong>
+                Obtenez des infos sur vos aliments
+            </div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="loading-container">
-        <div class="loading-content">
+    <div class="loading" id="loading">
+        <div class="loading-inner">
             <div class="loading-spinner"></div>
-            <div class="loading-text" id="loadingText">Chargement du modèle...</div>
-            <div class="loading-subtext" id="loadingSubtext">Veuillez patienter pendant le téléchargement</div>
+            <div class="loading-text" id="loading-text">Chargement du modèle...</div>
+            <div class="loading-subtext" id="loading-subtext">Veuillez patienter, cela peut prendre quelques instants</div>
         </div>
     </div>
-
-    <footer>
-        <p>© 2025 Détection de Nourriture | Créé avec TensorFlow.js et COCO-SSD</p>
-    </footer>
 
     <script>
         // Références aux éléments du DOM
@@ -371,11 +645,15 @@
         const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const detectedItems = document.getElementById('detectedItems');
-        const statusBadge = document.getElementById('statusBadge');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingText = document.getElementById('loadingText');
-        const loadingSubtext = document.getElementById('loadingSubtext');
+        const scanBtn = document.getElementById('scan-button');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const loadingSubtext = document.getElementById('loading-subtext');
+        const resultsContainer = document.getElementById('results-container');
+        const foodItems = document.getElementById('food-items');
+        const nutritionValue = document.getElementById('nutrition-value');
+        const calorieValue = document.getElementById('calorie-value');
+        const voiceAssist = document.getElementById('voice-assist');
 
         // Variables globales
         let model;
@@ -384,50 +662,82 @@
         let detectionInterval;
         let currentStream = null;
 
-        // Liste des classes alimentaires que nous voulons détecter
-        const foodClasses = [
-            'apple', 'orange', 'banana', 'broccoli', 'carrot', 'hot dog', 
-            'pizza', 'donut', 'cake', 'sandwich', 'fruit', 'food'
-        ];
-
-        // Emojis pour les différentes classes
-        const foodEmojis = {
-            'apple': '🍎',
-            'orange': '🍊',
-            'banana': '🍌',
-            'broccoli': '🥦',
-            'carrot': '🥕',
-            'hot dog': '🌭',
-            'pizza': '🍕',
-            'donut': '🍩',
-            'cake': '🍰',
-            'sandwich': '🥪',
-            'fruit': '🍏',
-            'food': '🍽️'
+        // Base de données des aliments avec valeurs nutritionnelles
+        const foodDatabase = {
+            "apple": { calories: 95, protein: 0.5, carbs: 25, fat: 0.3, nutritionValue: 82 },
+            "orange": { calories: 62, protein: 1.2, carbs: 15.4, fat: 0.2, nutritionValue: 78 },
+            "banana": { calories: 105, protein: 1.3, carbs: 27, fat: 0.4, nutritionValue: 75 },
+            "sandwich": { calories: 350, protein: 15, carbs: 40, fat: 12, nutritionValue: 65 },
+            "carrot": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, nutritionValue: 88 },
+            "hot dog": { calories: 290, protein: 10, carbs: 18, fat: 17, nutritionValue: 42 },
+            "pizza": { calories: 285, protein: 12, carbs: 36, fat: 10, nutritionValue: 48 },
+            "donut": { calories: 253, protein: 3, carbs: 30, fat: 14, nutritionValue: 35 },
+            "cake": { calories: 367, protein: 5, carbs: 50, fat: 16, nutritionValue: 32 },
+            "broccoli": { calories: 55, protein: 3.7, carbs: 11.2, fat: 0.6, nutritionValue: 91 },
+            "pomme": { calories: 95, protein: 0.5, carbs: 25, fat: 0.3, nutritionValue: 82 },
+            "carotte": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, nutritionValue: 88 }
         };
 
-        // Fonction pour charger le modèle COCO-SSD
+        // Classes d'aliments détectables
+        const foodClasses = [
+            'apple', 'orange', 'banana', 'sandwich', 'carrot', 'hot dog', 'pizza', 
+            'donut', 'cake', 'broccoli', 'bowl', 'cup', 'fork', 'knife', 'spoon',
+            'bottle', 'wine glass', 'banana', 'carrot'
+        ];
+
+        // Emojis pour les différents aliments
+        const foodEmojis = {
+            "apple": "🍎",
+            "orange": "🍊",
+            "banana": "🍌",
+            "sandwich": "🥪",
+            "carrot": "🥕",
+            "hot dog": "🌭",
+            "pizza": "🍕",
+            "donut": "🍩",
+            "cake": "🍰",
+            "broccoli": "🥦",
+            "bowl": "🥣",
+            "cup": "☕"
+        };
+
+        // Traduction français des aliments
+        const foodTranslations = {
+            "apple": "Pomme",
+            "orange": "Orange",
+            "banana": "Banane",
+            "sandwich": "Sandwich",
+            "carrot": "Carotte",
+            "hot dog": "Hot Dog",
+            "pizza": "Pizza",
+            "donut": "Donut",
+            "cake": "Gâteau",
+            "broccoli": "Brocoli",
+            "bowl": "Bol",
+            "cup": "Tasse"
+        };
+
+        // Fonction pour charger le modèle
         async function loadModel() {
             try {
                 loadingText.textContent = "Chargement du modèle...";
-                loadingSubtext.textContent = "Cela peut prendre quelques instants";
+                loadingSubtext.textContent = "Veuillez patienter, cela peut prendre quelques instants";
                 
-                // Chargement du modèle
+                // Chargement du modèle COCO-SSD
                 model = await cocoSsd.load();
                 isModelLoaded = true;
                 
                 loadingText.textContent = "Modèle chargé avec succès!";
-                loadingSubtext.textContent = "Tout est prêt pour la détection";
+                loadingSubtext.textContent = "Tout est prêt pour l'analyse";
                 
-                // Cacher l'overlay de chargement après un court délai
                 setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
+                    loading.classList.add('hidden');
                     startBtn.disabled = false;
                 }, 1000);
                 
             } catch (error) {
                 console.error('Erreur lors du chargement du modèle:', error);
-                loadingText.textContent = "Erreur de chargement";
+                loadingText.textContent = "Erreur de chargement du modèle";
                 loadingSubtext.textContent = "Veuillez rafraîchir la page et réessayer";
             }
         }
@@ -435,19 +745,17 @@
         // Fonction pour démarrer la caméra
         async function startCamera() {
             try {
-                loadingOverlay.classList.remove('hidden');
+                loading.classList.remove('hidden');
                 loadingText.textContent = "Accès à la caméra...";
                 loadingSubtext.textContent = "Veuillez autoriser l'accès à votre caméra";
                 
                 const constraints = {
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'environment' // Utilise la caméra arrière sur mobile
+                        facingMode: 'environment'
                     }
                 };
                 
-                // Demander l'accès à la caméra
+                // Demande d'accès à la caméra
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 currentStream = stream;
                 video.srcObject = stream;
@@ -459,12 +767,11 @@
                     };
                 });
                 
-                // Ajuster les dimensions du canvas à celles de la vidéo
+                // Ajuster le canvas aux dimensions de la vidéo
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 
-                // Masquer l'overlay de chargement
-                loadingOverlay.classList.add('hidden');
+                loading.classList.add('hidden');
                 
                 // Activer/désactiver les boutons
                 startBtn.disabled = true;
@@ -474,17 +781,13 @@
                 isDetecting = true;
                 startDetection();
                 
-                statusBadge.textContent = "Caméra active";
-                statusBadge.style.backgroundColor = "#2e7d32"; // vert
-                
             } catch (error) {
                 console.error('Erreur lors de l\'accès à la caméra:', error);
                 loadingText.textContent = "Erreur d'accès à la caméra";
                 loadingSubtext.textContent = "Veuillez vérifier les permissions de votre navigateur";
                 
-                // Masquer l'overlay après un délai
                 setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
+                    loading.classList.add('hidden');
                 }, 2000);
             }
         }
@@ -505,18 +808,12 @@
             // Effacer le canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Réinitialiser l'affichage des détections
-            detectedItems.innerHTML = `
-                <div class="item-card">
-                    <div class="item-icon">🔍</div>
-                    <div class="item-name">En attente...</div>
-                    <div class="item-confidence">Démarrez la caméra pour analyser</div>
-                </div>
-            `;
+            // Masquer les résultats
+            resultsContainer.classList.remove('visible');
             
-            // Mettre à jour le badge de statut
-            statusBadge.textContent = "Caméra arrêtée";
-            statusBadge.style.backgroundColor = "#c62828"; // rouge
+            // Réinitialiser les métriques
+            nutritionValue.textContent = "0%";
+            calorieValue.textContent = "Faible";
             
             // Activer/désactiver les boutons
             startBtn.disabled = false;
@@ -531,15 +828,23 @@
             detectionInterval = setInterval(detectObjects, 333);
         }
 
+        // Fonction de capture manuelle
+        function captureAndAnalyze() {
+            if (!isDetecting || !isModelLoaded) return;
+            
+            // Analyse forcée avec affichage des résultats
+            detectObjects(true);
+        }
+
         // Fonction pour détecter les objets dans le flux vidéo
-        async function detectObjects() {
+        async function detectObjects(showResults = false) {
             if (!isDetecting || !isModelLoaded) return;
             
             try {
                 // Effectuer la détection
                 const predictions = await model.detect(video);
                 
-                // Effacer le canvas avant de dessiner
+                // Effacer le canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
                 // Filtrer pour ne garder que les aliments
@@ -547,25 +852,36 @@
                     foodClasses.includes(prediction.class)
                 );
                 
-                // Dessiner les boîtes de détection
-                drawDetections(foodPredictions);
-                
-                // Mettre à jour l'affichage des détections
-                updateDetectedItems(foodPredictions);
-                
-                // Mettre à jour le badge de statut
                 if (foodPredictions.length > 0) {
-                    statusBadge.textContent = `${foodPredictions.length} aliment(s) détecté(s)`;
-                    statusBadge.style.backgroundColor = "#1e88e5"; // bleu
+                    // Trier par confiance
+                    foodPredictions.sort((a, b) => b.score - a.score);
+                    
+                    // Dessiner les boîtes de détection
+                    drawDetections(foodPredictions);
+                    
+                    // Mettre à jour l'affichage des résultats
+                    updateResults(foodPredictions, showResults);
+                    
+                    // Mettre à jour les métriques
+                    updateMetrics(foodPredictions[0]);
                 } else {
-                    statusBadge.textContent = "Aucun aliment détecté";
-                    statusBadge.style.backgroundColor = "#fb8c00"; // orange
+                    // Masquer les résultats s'il n'y a pas d'aliments détectés
+                    if (!showResults) {
+                        resultsContainer.classList.remove('visible');
+                    } else {
+                        // Si c'est un scan manuel, afficher un message
+                        foodItems.innerHTML = `
+                            <div class="food-item">
+                                <div class="food-name" data-emoji="🔍">Aucun aliment détecté</div>
+                                <div class="food-confidence">Essayez à nouveau</div>
+                            </div>
+                        `;
+                        resultsContainer.classList.add('visible');
+                    }
                 }
                 
             } catch (error) {
-                console.error('Erreur lors de la détection:', error);
-                statusBadge.textContent = "Erreur de détection";
-                statusBadge.style.backgroundColor = "#c62828"; // rouge
+                console.error('Erreur de détection:', error);
             }
         }
 
@@ -574,65 +890,81 @@
             predictions.forEach(prediction => {
                 // Extraire les coordonnées
                 const [x, y, width, height] = prediction.bbox;
-                const text = `${prediction.class} (${Math.round(prediction.score * 100)}%)`;
                 
                 // Dessiner la boîte
                 ctx.strokeStyle = '#1e88e5';
                 ctx.lineWidth = 4;
                 ctx.strokeRect(x, y, width, height);
                 
+                // Préparer le texte
+                const confidence = Math.round(prediction.score * 100);
+                const frenchName = foodTranslations[prediction.class] || prediction.class;
+                const text = `${frenchName} (${confidence}%)`;
+                
                 // Dessiner l'arrière-plan du texte
                 ctx.fillStyle = 'rgba(30, 136, 229, 0.8)';
+                ctx.font = '16px sans-serif';
                 const textWidth = ctx.measureText(text).width + 8;
                 const textHeight = 24;
                 ctx.fillRect(x, y - textHeight - 4, textWidth, textHeight);
                 
                 // Dessiner le texte
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '16px sans-serif';
                 ctx.fillText(text, x + 4, y - 8);
             });
         }
 
-        // Fonction pour mettre à jour l'affichage des détections
-        function updateDetectedItems(predictions) {
-            // Si aucune détection, afficher un message
-            if (predictions.length === 0) {
-                detectedItems.innerHTML = `
-                    <div class="item-card">
-                        <div class="item-icon">🔍</div>
-                        <div class="item-name">Aucun aliment détecté</div>
-                        <div class="item-confidence">Essayez avec un autre angle</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Trier les prédictions par score de confiance (décroissant)
-            predictions.sort((a, b) => b.score - a.score);
-            
+        // Fonction pour mettre à jour l'affichage des résultats
+        function updateResults(predictions, forceShow = false) {
             // Créer le HTML pour chaque détection
             let html = '';
-            predictions.forEach(prediction => {
+            predictions.slice(0, 3).forEach(prediction => {
                 const emoji = foodEmojis[prediction.class] || '🍽️';
-                const confidencePct = Math.round(prediction.score * 100);
+                const confidence = Math.round(prediction.score * 100);
+                const frenchName = foodTranslations[prediction.class] || prediction.class;
                 
                 html += `
-                    <div class="item-card">
-                        <div class="item-icon">${emoji}</div>
-                        <div class="item-name">${prediction.class.charAt(0).toUpperCase() + prediction.class.slice(1)}</div>
-                        <div class="item-confidence">${confidencePct}% de confiance</div>
+                    <div class="food-item">
+                        <div class="food-name" data-emoji="${emoji}">${frenchName}</div>
+                        <div class="food-confidence">${confidence}%</div>
                     </div>
                 `;
             });
             
             // Mettre à jour le contenu
-            detectedItems.innerHTML = html;
+            foodItems.innerHTML = html;
+            
+            // Afficher les résultats si la confiance est élevée ou si demandé explicitement
+            if (forceShow || predictions[0].score > 0.7) {
+                resultsContainer.classList.add('visible');
+            }
+        }
+
+        // Fonction pour mettre à jour les métriques
+        function updateMetrics(topPrediction) {
+            const foodData = foodDatabase[topPrediction.class];
+            
+            if (foodData) {
+                // Mettre à jour la valeur nutritionnelle
+                nutritionValue.textContent = `${foodData.nutritionValue}%`;
+                
+                // Déterminer le niveau de calories
+                let calorieLevel;
+                if (foodData.calories < 100) calorieLevel = "Faible";
+                else if (foodData.calories < 250) calorieLevel = "Moyen";
+                else calorieLevel = "Élevé";
+                
+                calorieValue.textContent = calorieLevel;
+            }
         }
 
         // Event listeners
         startBtn.addEventListener('click', startCamera);
         stopBtn.addEventListener('click', stopCamera);
+        scanBtn.addEventListener('click', captureAndAnalyze);
+        voiceAssist.addEventListener('click', () => {
+            alert("L'assistant vocal n'est pas disponible dans cette démo. Dans une version complète, cette fonctionnalité activerait les commandes vocales.");
+        });
 
         // Initialiser l'application
         window.addEventListener('load', loadModel);
