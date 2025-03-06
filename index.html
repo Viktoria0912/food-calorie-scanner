@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan - Food Calorie Scanner</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <nav class="navbar">
+                <div class="logo">NutriScan</div>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+                <button class="primary-btn">Download</button>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-content">
+                    <h1>Scan. Learn. Thrive.</h1>
+                    <p class="subtitle">Instantly see the nutritional content of any food with a simple scan.</p>
+                    <button class="primary-btn large" id="start-scanning">Start Scanning</button>
+                </div>
+                <div class="hero-image">
+                    <img src="images/app-preview.png" alt="NutriScan App Preview" id="hero-image">
+                </div>
+            </section>
+
+            <section id="scanner" class="scanner-section hidden">
+                <div class="scanner-container">
+                    <div class="scanner-header">
+                        <h2>Scan Your Food</h2>
+                        <p>Position your food item in the frame</p>
+                    </div>
+                    <div class="camera-view">
+                        <video id="camera-feed" autoplay playsinline></video>
+                        <div class="scan-frame">
+                            <div class="scan-line"></div>
+                        </div>
+                        <button id="capture-btn">
+                            <div class="capture-btn-inner"></div>
+                        </button>
+                    </div>
+                    <button class="secondary-btn" id="cancel-scan">Cancel</button>
+                </div>
+            </section>
+
+            <section id="results" class="results-section hidden">
+                <div class="results-container">
+                    <div class="results-header">
+                        <h2>Nutrition Facts</h2>
+                        <button class="close-btn" id="close-results">&times;</button>
+                    </div>
+                    <div class="food-image-container">
+                        <img id="scanned-food-image" alt="Scanned Food">
+                    </div>
+                    <div class="food-info">
+                        <h3 id="food-name">Food Name</h3>
+                        <div class="nutrition-data">
+                            <div class="nutrition-item">
+                                <div class="nutrition-value" id="calories">0</div>
+                                <div class="nutrition-label">Calories</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value" id="protein">0g</div>
+                                <div class="nutrition-label">Protein</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value" id="carbs">0g</div>
+                                <div class="nutrition-label">Carbs</div>
+                            </div>
+                            <div class="nutrition-item">
+                                <div class="nutrition-value" id="fat">0g</div>
+                                <div class="nutrition-label">Fat</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="additional-info">
+                        <h4>Serving Size: <span id="serving-size">100g</span></h4>
+                        <div class="vitamins-minerals">
+                            <h4>Vitamins & Minerals</h4>
+                            <ul id="vitamins-list"></ul>
+                        </div>
+                    </div>
+                    <button class="primary-btn" id="save-results">Save to History</button>
+                </div>
+            </section>
+
+            <section id="features" class="features-section">
+                <h2>Powerful Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Instant Scanning</h3>
+                        <p>Just point your camera at any food item for immediate nutrition information</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3>Detailed Analysis</h3>
+                        <p>Get complete nutritional breakdown including calories, macros, and micronutrients</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Track Progress</h3>
+                        <p>Save your scans and monitor your nutrition intake over time</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🍎</div>
+                        <h3>Food Database</h3>
+                        <p>Access information on thousands of food items, brands, and restaurant meals</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="how-it-works" class="how-it-works-section">
+                <h2>How It Works</h2>
+                <div class="steps-container">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Scan Your Food</h3>
+                            <p>Use your camera to scan any food item, meal, or packaged product</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>AI Analysis</h3>
+                            <p>Our advanced AI instantly recognizes the food and analyzes its nutritional content</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Get Results</h3>
+                            <p>View detailed nutrition information and save it to your history</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="about" class="about-section">
+                <div class="about-content">
+                    <h2>About NutriScan</h2>
+                    <p>NutriScan was created to help people make informed decisions about the food they eat. Our mission is to simplify nutrition tracking and promote healthier eating habits through innovative technology.</p>
+                    <p>With our state-of-the-art food recognition system, we're making nutrition information accessible to everyone, anywhere, anytime.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-logo">NutriScan</div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Pricing</a></li>
+                            <li><a href="#">Download</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Support</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 NutriScan. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/scanner.js"></script>
+</body>
+</html>
