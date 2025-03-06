@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodScanner - Real-time Food Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+        /* Base Styles with Green and Black Theme */
+        :root {
+            --primary-color: #34c759; /* Vibrant green */
+            --primary-dark: #28b14c;
+            --primary-light: #40d866;
+            --secondary-color: #000000; /* Black */
+            --background-dark: #121212;
+            --background-light: #1e1e1e;
+            --text-light: #ffffff;
+            --text-gray: #aaaaaa;
+            --border-radius: 16px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 36px;
+            background: linear-gradient(90deg, var(--primary-color), #40db73);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* Video and Canvas Container */
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            background-color: var(--background-light);
+        }
+
+        #webcam {
+            width: 100%;
+            height: auto;
+            display: block;
+            transform: scaleX(-1); /* Mirror for more natural user experience */
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1); /* Mirror to match video */
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn.secondary:hover {
+            background-color: rgba(52, 199, 89, 0.1);
+        }
+
+        /* Detection Results */
+        .results-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .results-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .results-list {
+            list-style: none;
+        }
+
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .food-item:last-child {
+            border-bottom: none;
+        }
+
+        .food-name {
+            font-weight: 500;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .food-name::before {
+            content: '🍽️';
+            margin-right: 8px;
+        }
+
+        .food-confidence {
+            background-color: rgba(52, 199, 89, 0.2);
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nutrition-data {
+            margin-top: 16px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .nutrition-title {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .nutrition-item {
+            background-color: rgba(52, 199, 89, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .nutrition-item:hover {
+            transform: translateY(-3px);
+            background-color: rgba(52, 199, 89, 0.15);
+        }
+
+        .nutrition-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .nutrition-label {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        /* How it works section */
+        .how-it-works {
+            margin-top: 40px;
+            padding: 30px 0;
+            border-top: 1px solid #333;
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .step-card {
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .step-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            border-radius: var(--border-radius);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid rgba(52, 199, 89, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            color: var(--text-gray);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">FoodScanner</div>
+        </div>
+
+        <div class="app-container">
+            <h1>Real-time Food Detection with AI</h1>
+            
+            <div class="video-container">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="startBtn">Start Camera</button>
+                <button class="btn secondary" id="stopBtn">Stop Camera</button>
+            </div>
+
+            <div class="results-container">
+                <div class="results-title">
+                    <h3>Detected Food Items</h3>
+                    <span id="detection-status">Waiting for detection...</span>
+                </div>
+                <ul class="results-list" id="detectionResults"></ul>
+
+                <div class="nutrition-data hidden" id="nutritionData">
+                    <h3 class="nutrition-title">Nutritional Information</h3>
+                    <div class="nutrition-grid">
+                        <div class="nutrition-item">
+                            <div class="nutrition-value" id="calories">0</div>
+                            <div class="nutrition-label">Calories</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value" id="protein">0g</div>
+                            <div class="nutrition-label">Protein</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value" id="carbs">0g</div>
+                            <div class="nutrition-label">Carbs</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-value" id="fat">0g</div>
+                            <div class="nutrition-label">Fat</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📸</div>
+                    <h3>Enable Your Camera</h3>
+                    <p>Allow access to your device's camera for real-time food detection</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">🔍</div>
+                    <h3>Show Food to Camera</h3>
+                    <p>Position your food in view of your camera for AI identification</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">📊</div>
+                    <h3>Get Nutritional Data</h3>
+                    <p>Receive accurate nutritional information about your detected food</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 FoodScanner. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const webcamElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('canvas');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const loadingElement = document.getElementById('loading');
+        const detectionResults = document.getElementById('detectionResults');
+        const detectionStatus = document.getElementById('detection-status');
+        const nutritionData = document.getElementById('nutritionData');
+        const caloriesElement = document.getElementById('calories');
+        const proteinElement = document.getElementById('protein');
+        const carbsElement = document.getElementById('carbs');
+        const fatElement = document.getElementById('fat');
+
+        // Set up canvas context
+        const ctx = canvasElement.getContext('2d');
+        
+        // Global variables
+        let model;
+        let cameraStream;
+        let isDetecting = false;
+        let detectionInterval;
+
+        // Food calorie database (expanded to include more COCO-SSD detectables)
+        const foodDatabase = {
+            "apple": { calories: 95, protein: 0.5, carbs: 25, fat: 0.3 },
+            "orange": { calories: 62, protein: 1.2, carbs: 15.4, fat: 0.2 },
+            "banana": { calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
+            "sandwich": { calories: 350, protein: 15, carbs: 40, fat: 12 },
+            "carrot": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2 },
+            "hot dog": { calories: 290, protein: 10, carbs: 18, fat: 17 },
+            "pizza": { calories: 285, protein: 12, carbs: 36, fat: 10 },
+            "donut": { calories: 253, protein: 3, carbs: 30, fat: 14 },
+            "cake": { calories: 367, protein: 5, carbs: 50, fat: 16 },
+            "broccoli": { calories: 55, protein: 3.7, carbs: 11.2, fat: 0.6 },
+            "bowl": { calories: 300, protein: 12, carbs: 40, fat: 10 }, // Assuming food bowl
+            "cup": { calories: 2, protein: 0, carbs: 0.5, fat: 0 }, // Assuming contents as tea/coffee
+            "fork": { calories: 0, protein: 0, carbs: 0, fat: 0 }, // Not food, but often detected
+            "knife": { calories: 0, protein: 0, carbs: 0, fat: 0 }, // Not food, but often detected
+            "spoon": { calories: 0, protein: 0, carbs: 0, fat: 0 }, // Not food, but often detected
+            "bottle": { calories: 0, protein: 0, carbs: 0, fat: 0 }, // Assuming empty
+            "wine glass": { calories: 125, protein: 0, carbs: 4, fat: 0 }, // Assuming wine
+            "banana": { calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
+            "carrot": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2 }
+        };
+
+        // Food-related COCO-SSD classes
+        const foodClasses = [
+            'apple', 'orange', 'banana', 'sandwich', 'carrot', 'hot dog', 'pizza', 
+            'donut', 'cake', 'broccoli', 'bowl', 'cup', 'fork', 'knife', 'spoon',
+            'bottle', 'wine glass'
+        ];
+
+        // Initialize the app
+        async function init() {
+            try {
+                loadingElement.classList.remove('hidden');
+                // Load the COCO-SSD model
+                model = await cocoSsd.load();
+                detectionStatus.innerText = 'Model loaded - Ready to scan';
+                loadingElement.classList.add('hidden');
+                startBtn.disabled = false;
+            } catch (error) {
+                console.error('Failed to load model:', error);
+                detectionStatus.innerText = 'Error loading model. Please refresh.';
+                loadingElement.classList.add('hidden');
+            }
+        }
+
+        // Start webcam and detection
+        async function startCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: false
+                });
+                
+                webcamElement.srcObject = cameraStream;
+                
+                // Wait for video to be ready
+                webcamElement.onloadedmetadata = () => {
+                    canvasElement.width = webcamElement.videoWidth;
+                    canvasElement.height = webcamElement.videoHeight;
+                    
+                    detectionStatus.innerText = 'Camera on - Scanning for food';
+                    
+                    // Start detection
+                    isDetecting = true;
+                    startDetection();
+                };
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                detectionStatus.innerText = 'Camera access denied. Please check permissions.';
+            }
+        }
+
+        // Stop webcam and detection
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                webcamElement.srcObject = null;
+            }
+            
+            isDetecting = false;
+            clearInterval(detectionInterval);
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            detectionStatus.innerText = 'Camera off';
+            detectionResults.innerHTML = '';
+            nutritionData.classList.add('hidden');
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        // Start object detection
+        function startDetection() {
+            if (!isDetecting) return;
+            
+            // Run detection every 500ms
+            detectionInterval = setInterval(detectObjects, 500);
+        }
+
+        // Detect objects in the video feed
+        async function detectObjects() {
+            if (!isDetecting || !model) return;
+            
+            try {
+                const predictions = await model.detect(webcamElement);
+                
+                // Clear canvas for new drawings
+                ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                
+                // Clear previous results
+                detectionResults.innerHTML = '';
+                let foundFood = false;
+                let nutritionShown = false;
+                
+                // Filter for food-related objects
+                const foodPredictions = predictions.filter(prediction => 
+                    foodClasses.includes(prediction.class)
+                );
+                
+                // Draw bounding boxes and show results
+                if (foodPredictions.length > 0) {
+                    foodPredictions.forEach(prediction => {
+                        // Draw bounding box
+                        drawBoundingBox(prediction);
+                        
+                        // Create result list item
+                        const listItem = document.createElement('li');
+                        listItem.className = 'food-item';
+                        
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'food-name';
+                        nameSpan.textContent = prediction.class.charAt(0).toUpperCase() + prediction.class.slice(1);
+                        
+                        const confidenceSpan = document.createElement('span');
+                        confidenceSpan.className = 'food-confidence';
+                        confidenceSpan.textContent = `${Math.round(prediction.score * 100)}% confident`;
+                        
+                        listItem.appendChild(nameSpan);
+                        listItem.appendChild(confidenceSpan);
+                        detectionResults.appendChild(listItem);
+                        
+                        // Update nutrition data for the highest confidence food item
+                        if (!nutritionShown && prediction.score > 0.6 && foodDatabase[prediction.class]) {
+                            showNutritionData(prediction.class);
+                            nutritionShown = true;
+                        }
+                        
+                        foundFood = true;
+                    });
+                    
+                    detectionStatus.innerText = 'Food detected!';
+                } else {
+                    detectionStatus.innerText = 'No food detected. Try moving your camera.';
+                    nutritionData.classList.add('hidden');
+                }
+                
+                if (!foundFood) {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'food-item';
+                    listItem.textContent = 'No food items detected. Try adjusting lighting or camera position.';
+                    detectionResults.appendChild(listItem);
+                }
+            } catch (error) {
+                console.error('Detection error:', error);
+                detectionStatus.innerText = 'Detection error. Please try again.';
+            }
+        }
+
+        // Draw bounding box on canvas
+        function drawBoundingBox(prediction) {
+            // Get coordinates
+            const [x, y, width, height] = prediction.bbox;
+            
+            // Draw rectangle
+            ctx.strokeStyle = '#34c759';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, width, height);
+            
+            // Draw label background
+            ctx.fillStyle = 'rgba(52, 199, 89, 0.7)';
+            const textWidth = ctx.measureText(prediction.class).width;
+            ctx.fillRect(x, y - 30, textWidth + 60, 30);
+            
+            // Draw text
+            ctx.fillStyle = '#000000';
+            ctx.font = '18px sans-serif';
+            ctx.fillText(
+                `${prediction.class} ${Math.round(prediction.score * 100)}%`, 
+                x + 5, 
+                y - 10
+            );
+        }
+
+        // Display nutrition data for detected food
+        function showNutritionData(foodName) {
+            const food = foodDatabase[foodName];
+            
+            if (food) {
+                caloriesElement.textContent = food.calories;
+                proteinElement.textContent = `${food.protein}g`;
+                carbsElement.textContent = `${food.carbs}g`;
+                fatElement.textContent = `${food.fat}g`;
+                nutritionData.classList.remove('hidden');
+            } else {
+                nutritionData.classList.add('hidden');
+            }
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startCamera);
+        stopBtn.addEventListener('click', stopCamera);
+        stopBtn.disabled = true;
+
+        // Initialize app on page load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
