@@ -1,60 +1,99 @@
-# MeatScanner: Meat Nutrition Analyzer
+# FoodScan - Analyse Nutritionnelle en Temps Réel
 
-A modern web application for scanning meat and analyzing nutritional content with a health-focused design.
+![FoodScan Preview](/preview.jpg)
 
-## Overview
+## 🌟 Présentation
 
-MeatScanner is a web-based application that allows users to scan meat products with their device camera and instantly receive detailed nutritional information including calories, protein, fat, and vitamins.
+FoodScan est une application web moderne qui utilise l'intelligence artificielle pour identifier et analyser les aliments en temps réel. Grâce à la caméra de votre appareil, l'application détecte les aliments et fournit instantanément des informations nutritionnelles détaillées.
 
-## Features
+## ✨ Fonctionnalités
 
-- **AI Meat Detection**: Advanced AI that recognizes different types of meat
-- **Complete Nutritional Analysis**: Get detailed nutritional breakdown of scanned meats
-- **Modern Green Design**: Clean, health-focused interface with a modern aesthetic
-- **Responsive Layout**: Works seamlessly on both desktop and mobile devices
-- **Smart Recommendations**: Cooking tips and health insights based on meat type
+- **Détection en Temps Réel** : Identifie automatiquement les aliments capturés par la caméra
+- **Analyse Nutritionnelle** : Fournit des informations détaillées sur les calories, protéines, glucides et lipides
+- **Interface Moderne** : Design élégant et intuitif inspiré des applications de santé modernes
+- **Visualisation Interactive** : Affiche le processus de scan avec des animations et effets visuels
+- **Historique des Détections** : Garde une trace des aliments récemment scannés
+- **Responsif** : Fonctionne sur desktop et mobile
 
-## Technology Stack
+## 🚀 Technologies Utilisées
 
-- HTML5
-- CSS3 (with animations)
-- JavaScript (vanilla)
-- Camera API
-- AI-powered meat recognition
+- **TensorFlow.js** : Pour le machine learning côté client
+- **COCO-SSD** : Modèle de détection d'objets pré-entraîné
+- **HTML5/CSS3** : Structure et style modernes
+- **JavaScript ES6+** : Logique de l'application et interactions
+- **API MediaDevices** : Accès à la caméra de l'appareil
+- **Canvas API** : Affichage des détections
 
-## Demo
+## 🛠️ Comment ça marche
 
-You can try the live demo by visiting the GitHub Pages deployment of this repository.
+L'application utilise TensorFlow.js et le modèle COCO-SSD pour analyser le flux vidéo en temps réel (à environ 3 FPS). Lorsqu'un aliment est détecté, ses informations nutritionnelles sont extraites d'une base de données interne et affichées à l'utilisateur.
 
-## How It Works
+### Processus de détection :
 
-This application uses the device camera to capture an image of meat. In a production environment, this image would be sent to an AI-powered meat recognition API that uses machine learning to identify the specific type of meat and return detailed nutritional data. For demonstration purposes, this version simulates the AI recognition with pre-defined meat data.
+1. **Capture** : L'application accède à la caméra et capture le flux vidéo
+2. **Analyse** : Le modèle AI analyse les images à la recherche d'aliments connus
+3. **Identification** : L'aliment est identifié avec un pourcentage de confiance
+4. **Affichage** : Les données nutritionnelles sont présentées à l'utilisateur
 
-## Getting Started
+## 📱 Comment utiliser
 
-1. Clone this repository
-2. Open `index.html` in a modern web browser
-3. Click "Start Scanning" to begin
-4. Point your camera at any meat (beef, chicken, pork, fish, etc.)
-5. Get instant nutritional information
+### Version en ligne
 
-## Target Users
+Accédez directement à l'application via ce lien :
+[https://viktoria0912.github.io/food-calorie-scanner/food-detection-app.html](https://viktoria0912.github.io/food-calorie-scanner/food-detection-app.html)
 
-- Health-conscious individuals
-- Fitness enthusiasts
-- Athletes tracking protein intake
-- Bodybuilders monitoring macros
-- People on specialized diets (keto, paleo, etc.)
+### Installation locale
 
-## Note
+1. Clonez ce dépôt :
+```bash
+git clone https://github.com/Viktoria0912/food-calorie-scanner.git
+```
 
-This is a demo application. In a real-world implementation, it would require:
+2. Ouvrez simplement le fichier `food-detection-app.html` dans votre navigateur
 
-- An AI-powered meat recognition API
-- User authentication
-- Cloud data storage for saving nutritional history
-- Native mobile app versions for better camera integration
+3. Autorisez l'accès à la caméra lorsque demandé
 
-## License
+4. Pointez votre caméra vers un aliment et observez la détection automatique !
 
-MIT
+## 🔎 Aliments détectables
+
+L'application peut actuellement détecter ces types d'aliments :
+
+- 🍎 Pomme
+- 🍊 Orange
+- 🍌 Banane
+- 🥦 Brocoli
+- 🥕 Carotte
+- 🌭 Hot Dog
+- 🍕 Pizza
+- 🍩 Donut
+- 🍰 Gâteau
+- 🥪 Sandwich
+- 🥗 Salade
+
+## 🔮 Évolutions futures
+
+- Ajout de plus d'aliments dans la base de données
+- Amélioration de la précision de détection
+- Possibilité de sauvegarder l'historique des aliments scannés
+- Intégration d'un suivi nutritionnel quotidien
+- Support de plusieurs langues
+- Mode hors-ligne
+
+## 📝 Remarques
+
+- L'application nécessite un navigateur moderne supportant JavaScript ES6+ et l'API MediaDevices
+- Pour une meilleure détection, utilisez un bon éclairage et placez l'aliment clairement dans le cadre
+- La précision de la détection dépend de la qualité de l'image et de l'angle de vue
+
+## 🔒 Confidentialité
+
+Toutes les détections sont effectuées localement sur votre appareil. Aucune image ou donnée n'est envoyée à un serveur externe.
+
+## 📄 Licence
+
+Ce projet est sous licence MIT.
+
+---
+
+Créé avec ❤️ par [Viktoria0912](https://github.com/Viktoria0912)
