@@ -3,401 +3,506 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScanHealth - Détection de Nourriture</title>
+    <title>FoodScan - Analyse Nutritionnelle en Temps Réel</title>
     <!-- TensorFlow.js et COCO-SSD via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Styles intégrés avec design moderne en teintes de bleu */
+        /* Styles intégrés avec design moderne inspiré de l'image de référence */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --primary-color: #1e88e5; /* Bleu primaire */
-            --primary-light: #64b5f6;
-            --primary-very-light: #e3f2fd;
-            --secondary-color: #000000; /* Noir */
-            --background-color: #ffffff;
-            --background-light: #f5f5f7;
-            --text-dark: #1d1d1f;
-            --text-gray: #86868b;
+            --primary-color: #38b995;
+            --secondary-color: #f0f6e8;
+            --accent-color: #5ab552;
+            --text-color: #1a1a1a;
+            --text-secondary: #6c6c6c;
+            --bg-color: #ffffff;
+            --card-bg: #f9f9f9;
             --border-radius: 12px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: var(--font-family);
-            background-color: var(--background-color);
-            color: var(--text-dark);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1440px;
             margin: 0 auto;
             padding: 0;
-            position: relative;
         }
 
-        /* Hero Section */
-        .hero {
-            position: relative;
-            min-height: 100vh;
-            overflow: hidden;
+        .app-header {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 28px;
+            margin-right: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            margin-left: 3rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar {
+            background-color: var(--card-bg);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            width: 280px;
+            margin-right: 1rem;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .search-bar .search-icon {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            background-color: var(--background-light);
+            font-weight: 600;
         }
 
-        .hero-bg {
+        /* Main content styles */
+        .main-content {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 4.5rem);
+        }
+
+        .food-info-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .food-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .food-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .food-image-container {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+        }
+
+        .food-image {
+            max-width: 60%;
+            max-height: 70%;
+            object-fit: contain;
+        }
+
+        .scanning-label {
             position: absolute;
-            top: 0;
-            left: 0;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .scanning-label::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .scanning-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .see-all {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .see-all:hover {
+            color: var(--primary-color);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 0.8rem;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: none;
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.8rem;
+            color: var(--primary-color);
+        }
+
+        .smart-analysis {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .analysis-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.2rem;
+        }
+
+        .analysis-sound-waves {
+            width: 100%;
+            height: 60px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDIwMCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgMzBMMSA2MEw2IDYwTDYgMCIgc3Ryb2tlPSIjZWNlY2VjIiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTExIDIwTDExIDYwTDE2IDYwTDE2IDEwIiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMjEgNDVMMjEgNjBMMjYgNjBMMjYgMjUiIHN0cm9rZT0iI2RkZGRkZCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0zMSAxNUwzMSA2MEwzNiA2MEwzNiA1IiBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNNDEgMThMNDEgNjBMNDYgNjBMNDYgOCIgc3Ryb2tlPSIjZTVlNWU1IiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTUxIDUwTDUxIDYwTDU2IDYwTDU2IDMwIiBzdHJva2U9IiNkZGRkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNNjEgNDBMNjEgNjBMNjYgNjBMNjYgMjAiIHN0cm9rZT0iI2VjZWNlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik03MSAyNUw3MSA2MEw3NiA2MEw3NiA1IiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNODEgNUw4MSA2MEw4NiA2MEw4NiAxNSIgc3Ryb2tlPSIjZGRkZGRkIiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTkxIDMwTDkxIDYwTDk2IDYwTDk2IDAiIHN0cm9rZT0iI2VjZWNlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xMDEgMjBMMTAxIDYwTDEwNiA2MEwxMDYgMTAiIHN0cm9rZT0iI2U1ZTVlNSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xMTEgNDVMMTExIDYwTDExNiA2MEwxMTYgMjUiIHN0cm9rZT0iI2RkZGRkZCIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xMjEgMTVMMTIxIDYwTDEyNiA2MEwxMjYgNSIgc3Ryb2tlPSIjZWNlY2VjIiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTEzMSAxOEwxMzEgNjBMMTM2IDYwTDEzNiA4IiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTQxIDUwTDE0MSA2MEwxNDYgNjBMMTQ2IDMwIiBzdHJva2U9IiNkZGRkZGQiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTUxIDQwTDE1MSA2MEwxNTYgNjBMMTU2IDIwIiBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTYxIDI1TDE2MSA2MEwxNjYgNjBMMTY2IDUiIHN0cm9rZT0iI2U1ZTVlNSIgc3Ryb2tlLXdpZHRoPSIyIi8+CjxwYXRoIGQ9Ik0xNzEgNUwxNzEgNjBMMTc2IDYwTDE3NiAxNSIgc3Ryb2tlPSIjZGRkZGRkIiBzdHJva2Utd2lkdGg9IjIiLz4KPHBhdGggZD0iTTE4MSAzMEwxODEgNjBMMTg2IDYwTDE4NiAwIiBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNMTkxIDIwTDE5MSA2MEwxOTYgNjBMMTk2IDEwIiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJNODYgMjAiIHN0cm9rZT0iIzM4Yjk5NSIgc3Ryb2tlLXdpZHRoPSI0Ii8+CjxwYXRoIGQ9Ik04NiAyMEw5NiAxMCIgc3Ryb2tlPSIjMzhiOTk1IiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTTg2IDIwTDc2IDMwIiBzdHJva2U9IiMzOGI5OTUiIHN0cm9rZS13aWR0aD0iNCIvPgo8cGF0aCBkPSJNMTA2IDQwTDExNiAzMCIgc3Ryb2tlPSIjMzhiOTk1IiBzdHJva2Utd2lkdGg9IjQiLz4KPHBhdGggZD0iTTEwNiA0MEwxMjYgNTAiIHN0cm9rZT0iIzM4Yjk5NSIgc3Ryb2tlLXdpZHRoPSI0Ii8+Cjwvc3ZnPgo=');
+            background-repeat: no-repeat;
+            background-size: contain;
+            margin-bottom: 1rem;
+        }
+
+        .recent-updates {
+            margin-top: auto;
+        }
+
+        .update-list {
+            margin-top: 1rem;
+        }
+
+        .update-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .update-item:last-child {
+            border-bottom: none;
+        }
+
+        .update-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .update-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--primary-color);
+        }
+
+        .update-text {
+            font-size: 0.9rem;
+        }
+
+        .update-tag {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .update-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Phone Scanning Visualization */
+        .scanning-visualization {
+            position: relative;
             width: 100%;
             height: 100%;
-            background-color: var(--background-light);
-            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .logo-text {
-            font-size: 72px;
-            font-weight: 900;
-            color: rgba(0, 0, 0, 0.1);
+        .phone-container {
+            position: absolute;
+            top: 50%;
+            right: 4rem;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        .phone-mockup {
+            width: 280px;
+            height: 550px;
+            background-color: #000;
+            border-radius: 36px;
+            box-shadow: var(--shadow);
+            padding: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background-color: #000;
+            border-radius: 0 0 15px 15px;
+            z-index: 3;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scan-beam {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            white-space: nowrap;
-            z-index: -1;
-            letter-spacing: 2px;
-        }
-
-        /* Phone mockup */
-        .phone-container {
-            position: relative;
-            margin: 40px auto;
-            width: 300px;
-        }
-
-        .phone-mockup {
-            width: 100%;
-            border-radius: 36px;
-            box-shadow: var(--shadow);
-            background-color: #000;
-            padding: 12px;
-            border-radius: 40px;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .phone-mockup:hover {
-            transform: scale(1.02) translateY(-5px);
-        }
-
-        .phone-screen {
-            background-color: white;
-            border-radius: 30px;
-            overflow: hidden;
-            aspect-ratio: 9/19.5;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .phone-notch {
-            width: 50%;
-            height: 25px;
-            background-color: #000;
-            border-radius: 0 0 15px 15px;
-            position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
-        }
-
-        /* Scan Circle */
-        .scan-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            padding: 20px;
-            overflow: hidden;
-        }
-
-        .scan-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            border: 4px solid var(--primary-light);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .scan-circle:before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            right: -4px;
-            bottom: -4px;
-            border-radius: 50%;
-            border: 4px solid transparent;
-            border-top-color: var(--primary-color);
-            animation: rotate 2s linear infinite;
-        }
-
-        .scan-circle:after {
-            content: '';
-            position: absolute;
-            width: 20px;
+            width: 120px;
             height: 20px;
-            background-color: var(--primary-color);
+            background-color: rgba(56, 185, 149, 0.3);
+            filter: blur(15px);
             border-radius: 50%;
-            opacity: 0.7;
+            animation: scanBeam 2s infinite alternate;
+            z-index: 1;
         }
 
-        .scan-icon {
-            font-size: 40px;
-            color: var(--primary-color);
-            opacity: 0.5;
-        }
-
-        .scan-button {
-            width: 60px;
-            height: 60px;
-            background-color: var(--primary-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            margin-top: 20px;
-            border: none;
-            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);
-            transition: all 0.2s ease;
-        }
-
-        .scan-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.4);
-        }
-
-        /* Phone interface top bar */
-        .phone-interface-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            font-size: 14px;
-            color: var(--text-dark);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .phone-interface-bottom {
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.02);
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .phone-controls {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .phone-control-button {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: var(--text-gray);
-        }
-
-        /* Scanning Results */
-        .scanning-beam {
+        .scan-line {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
-            background-color: var(--primary-light);
-            opacity: 0.6;
-            z-index: 2;
-            animation: scanBeam 3s ease-in-out infinite;
-        }
-
-        /* Plant/Food imagery */
-        .plant-container {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: -1;
-        }
-
-        .plant-image {
-            height: 200px;
+            height: 2px;
+            background-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(56, 185, 149, 0.7);
+            animation: scanLine 2s infinite linear;
             opacity: 0.7;
         }
 
-        /* Metrics display */
-        .metrics-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 800px;
-            margin-top: 30px;
-            padding: 0 20px;
+        .food-salad {
+            position: absolute;
+            bottom: 2rem;
+            left: 6rem;
+            width: 340px;
+            height: 340px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzQwIiBoZWlnaHQ9IjM0MCIgdmlld0JveD0iMCAwIDM0MCAzNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjE3MCIgY3k9IjE3MCIgcj0iMTcwIiBmaWxsPSIjRjBGNkU4Ii8+CjxwYXRoIGQ9Ik0xNzUuNSAxMTBDMTQ1LjUgMTEwIDExMC41IDE0NSAxMzEgMTc0QzE1MS41IDIwMyAxOTguNSAyMTkgMjE5IDIwNUMyMzkuNSAxOTEgMjMyIDEzNSAyMTkgMTIzQzIwNiAxMTEgMTkwIDExMCAxNzUuNSAxMTBaIiBmaWxsPSIjNzVDOTQ0Ii8+CjxwYXRoIGQ9Ik0xMjEgMTU1QzEwMSAxNTUgODAgMTgwIDk1LjUgMjAzQzExMSAyMjYgMTU4IDIzOCAxNzguNSAyMjFDMTk5IDIwNCAxOTEuNSAxNDAuNSAxNzguNSAxMjkuNSIgZmlsbD0iIzQ5QTEzMSIvPgo8cGF0aCBkPSJNMTIxIDE5MkMxMDEgMTkyIDk4IDIwMCAxMTMuNSAyMjNDMTI5IDI0NiAxNzYgMjU4IDE5Ni41IDI0MSIgZmlsbD0iIzU1QjA0MSIvPgo8cGF0aCBkPSJNMTQ0IDE2MkMxMjQuNSAxNjIgMTA1IDE3OSAxMjAgMjAyQzEzNSAyMjUgMTgwLjUgMjMzIDE5NS41IDIxNiIgZmlsbD0iIzc1RDMzRSIvPgo8cGF0aCBkPSJNMTk5IDE0NUMxNzkuNSAxNDUgMTYwIDE2MiAxNzUgMTg1QzE5MCAyMDggMjQwIDIxNiAyNTUgMTk5IiBmaWxsPSIjMzlCNTcyIi8+Cjwvc3ZnPgo=');
+            background-repeat: no-repeat;
+            background-size: contain;
+            z-index: 0;
         }
 
-        .metric-card {
-            background-color: var(--background-color);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            width: 48%;
-            transition: transform 0.3s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .metric-title {
-            color: var(--text-gray);
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .metric-value {
-            display: flex;
-            align-items: center;
-            font-size: 40px;
-            font-weight: 700;
-        }
-
-        .metric-icon {
-            width: 40px;
-            height: 40px;
-            background-color: var(--primary-very-light);
+        .scan-circle {
+            position: absolute;
+            top: 30%;
+            left: 30%;
+            width: 150px;
+            height: 150px;
+            border: 3px dashed var(--primary-color);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            color: var(--primary-color);
-            font-size: 20px;
+            animation: rotate 10s linear infinite;
         }
 
-        /* Voice assist panel */
-        .voice-assist {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: var(--background-color);
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .scan-light {
+            position: absolute;
+            top: 45%;
+            right: 0;
+            width: 200px;
+            height: 20px;
+            background: linear-gradient(90deg, rgba(56, 185, 149, 0) 0%, rgba(56, 185, 149, 0.4) 100%);
+            transform-origin: right center;
+            transform: rotate(-5deg);
+            filter: blur(5px);
+            animation: lightBeam 3s infinite alternate;
         }
 
-        .voice-assist:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .voice-icon {
-            width: 40px;
-            height: 40px;
-            background-color: var(--text-dark);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            color: white;
-            font-size: 20px;
-        }
-
-        .voice-text {
-            font-size: 14px;
-        }
-
-        .voice-text strong {
-            display: block;
-            font-weight: 600;
-        }
-
-        /* Controls */
-        .controls {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-            gap: 15px;
-        }
-
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            border: none;
-            border-radius: 50px;
-            padding: 15px 25px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.2);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.3);
-        }
-
-        .btn.secondary {
-            background-color: transparent;
-            color: var(--text-dark);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: none;
-        }
-
-        .btn.secondary:hover {
-            background-color: rgba(0, 0, 0, 0.03);
-        }
-
-        /* Video and canvas */
-        #video {
+        /* Video and Canvas for actual detection */
+        .video-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            opacity: 0.3;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 30px;
         }
 
         #canvas {
@@ -406,70 +511,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2;
-        }
-
-        /* Results display */
-        .results-container {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            width: 80%;
-            max-width: 300px;
-            box-shadow: var(--shadow);
-            z-index: 3;
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .results-container.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .results-title {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-
-        .food-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .food-name {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .food-name:before {
-            content: attr(data-emoji);
-            margin-right: 8px;
-            font-size: 18px;
-        }
-
-        .food-confidence {
-            font-size: 12px;
-            color: var(--text-gray);
-            background-color: var(--primary-very-light);
-            padding: 2px 8px;
-            border-radius: 20px;
         }
 
         /* Loading overlay */
-        .loading {
+        .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -479,181 +524,343 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
             z-index: 1000;
         }
 
-        .loading-inner {
-            background-color: white;
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            text-align: center;
-            max-width: 400px;
-            width: 80%;
-        }
-
         .loading-spinner {
-            border: 4px solid rgba(30, 136, 229, 0.2);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary-color);
             width: 50px;
             height: 50px;
-            margin: 0 auto 20px;
+            border: 4px solid rgba(56, 185, 149, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
             animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
         }
 
         .loading-text {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
         }
 
         .loading-subtext {
-            color: var(--text-gray);
-            font-size: 14px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
 
-        /* Animations */
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Controls section */
+        .controls-section {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
         }
 
-        @keyframes scanBeam {
-            0%, 100% { top: 0; opacity: 0.7; }
-            50% { top: calc(100% - 4px); opacity: 0.3; }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .btn:hover {
+            background-color: #32a585;
+            transform: translateY(-2px);
         }
 
-        /* Utility classes */
+        .btn-icon {
+            margin-right: 0.5rem;
+        }
+
+        .btn.secondary {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .btn.secondary:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Hidden utility */
         .hidden {
             display: none !important;
         }
 
-        /* Responsive design */
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes scanBeam {
+            from { opacity: 0.3; width: 80px; }
+            to { opacity: 0.6; width: 150px; }
+        }
+
+        @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        @keyframes lightBeam {
+            from { opacity: 0.4; transform: rotate(-5deg); }
+            to { opacity: 0.8; transform: rotate(-8deg); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .food-image-container {
+                height: 300px;
+            }
+
+            .phone-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                transform: none;
+                margin: 2rem auto;
+            }
+
+            .food-salad {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                margin: 0 auto;
+            }
+
+            .scan-circle, .scan-light {
+                display: none;
+            }
+        }
+
         @media (max-width: 768px) {
-            .metrics-container {
-                flex-direction: column;
-                gap: 15px;
+            .app-header {
+                padding: 1rem;
+                flex-wrap: wrap;
             }
 
-            .metric-card {
+            .nav-links {
+                margin-left: 0;
+                margin-top: 1rem;
                 width: 100%;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.5rem;
             }
 
-            .logo-text {
-                font-size: 50px;
+            .search-bar {
+                width: auto;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .food-title {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .food-image {
+                max-width: 80%;
+            }
+
+            .phone-mockup {
+                width: 240px;
+                height: 480px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="hero">
-            <div class="hero-bg"></div>
-            <div class="logo-text">SCANHEALTH</div>
+        <header class="app-header">
+            <div class="logo">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40NyAyIDIgNi40NyAyIDEyQzIgMTcuNTMgNi40NyAyMiAxMiAyMkMxNy41MyAyMiAyMiAxNy41MyAyMiAxMkMyMiA2LjQ3IDE3LjUzIDIgMTIgMloiIGZpbGw9IiMzOGI5OTUiLz4KPHBhdGggZD0iTTE1LjUgOEw4LjUgMTYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxwYXRoIGQ9Ik04LjUgOEwxNS41IDE2IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K" alt="Logo">
+                FoodScan
+            </div>
+            <div class="nav-links">
+                <a href="#" class="active">Mes aliments</a>
+                <a href="#">Analyses</a>
+                <a href="#">Historique</a>
+                <a href="#">Paramètres</a>
+            </div>
+            <div class="header-right">
+                <div class="search-bar">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" placeholder="Rechercher un aliment...">
+                </div>
+                <div class="user-avatar">U</div>
+            </div>
+        </header>
 
+        <div class="main-content">
+            <div class="food-info-section">
+                <h1 class="food-title">Salade Fraîche</h1>
+                <p class="food-subtitle">Analysez votre nourriture pour obtenir des informations nutritionnelles détaillées.</p>
+
+                <div class="food-image-container">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNTAgNzVDMTIwIDc1IDg1IDExMCAxMDUuNSAxMzlDMTI2IDE2OCAxNzMgMTg0IDE5My41IDE3MEMyMTQgMTU2IDIwNi41IDEwMCAxOTMuNSA4OEMxODAuNSA3NiAxNjQuNSA3NSAxNTAgNzVaIiBmaWxsPSIjNzVDOTQ0Ii8+CjxwYXRoIGQ9Ik05NS41IDEyMEM3NS41IDEyMCA1NC41IDE0NSA3MCAxNjhDODUuNSAxOTEgMTMyLjUgMjAzIDE1MyAxODZDMTczLjUgMTY5IDE2NiAxMDUuNSAxNTMgOTQuNSIgZmlsbD0iIzQ5QTEzMSIvPgo8cGF0aCBkPSJNOTUuNSAxNTdDNzUuNSAxNTcgNzIuNSAxNjUgODggMTg4QzEwMy41IDIxMSAxNTAuNSAyMjMgMTcxIDE3NSIgZmlsbD0iIzU1QjA0MSIvPgo8cGF0aCBkPSJNMTE4LjUgMTI3Qzk5IDE2MiA3OS41IDE0NCAxNjUgMTg3QzE4MCAxNjUgMTU1IDE1MCAxNzAgMTU4IiBmaWxsPSIjNzVEMzNFIi8+CjxwYXRoIGQ9Ik0xNzMuNSAxMTBDMTU0IDExMCAxMzQuNSAxMjcgMTQ5LjUgMTUwQzE2NC41IDE3MyAyMTQuNSAxODEgMjI5LjUgMTY0IiBmaWxsPSIjMzlCNTcyIi8+Cjwvc3ZnPgo=" alt="Salade" class="food-image">
+                    <div class="scanning-label">Scan en cours...</div>
+                </div>
+            </div>
+
+            <div class="scanning-section">
+                <div class="section-header">
+                    <div class="section-title">Analyse Nutritionnelle</div>
+                    <a href="#" class="see-all">Voir tout</a>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active">Valeurs Nutritives</button>
+                    <button class="tab">Composition</button>
+                    <button class="tab">Plus</button>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-name">Calories</div>
+                        <div class="metric-value">
+                            <div class="metric-icon">🔥</div>
+                            <span id="calorie-value">125</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-name">Protéines</div>
+                        <div class="metric-value">
+                            <div class="metric-icon">🥩</div>
+                            <span id="protein-value">3.5g</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-name">Glucides</div>
+                        <div class="metric-value">
+                            <div class="metric-icon">🍚</div>
+                            <span id="carbs-value">7.2g</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-name">Lipides</div>
+                        <div class="metric-value">
+                            <div class="metric-icon">🧈</div>
+                            <span id="fat-value">5.8g</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="smart-analysis">
+                    <div class="analysis-title">
+                        Analyse Intelligente
+                        <div id="status-badge" class="update-tag">Active</div>
+                    </div>
+                    <div class="analysis-subtitle">Modèle d'IA pour analyse précise</div>
+                    <div class="analysis-sound-waves"></div>
+                </div>
+
+                <div class="recent-updates">
+                    <div class="section-header">
+                        <div class="section-title">Détections Récentes</div>
+                        <a href="#" class="see-all">Voir tout</a>
+                    </div>
+
+                    <div class="update-list" id="detections-list">
+                        <!-- Les détections seront ajoutées ici dynamiquement -->
+                        <div class="update-item">
+                            <div class="update-info">
+                                <div class="update-icon">🥦</div>
+                                <div class="update-text">Brocoli</div>
+                            </div>
+                            <div class="update-tag">Légume</div>
+                            <div class="update-date">2 min</div>
+                        </div>
+                        <div class="update-item">
+                            <div class="update-info">
+                                <div class="update-icon">🍎</div>
+                                <div class="update-text">Pomme</div>
+                            </div>
+                            <div class="update-tag">Fruit</div>
+                            <div class="update-date">15 min</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="scanning-visualization">
+            <div class="food-salad"></div>
+            <div class="scan-circle"></div>
+            
             <div class="phone-container">
                 <div class="phone-mockup">
                     <div class="phone-notch"></div>
                     <div class="phone-screen">
-                        <div class="phone-interface-top">
-                            <div class="app-name">ScanHealth</div>
-                            <div class="time">9:41</div>
-                        </div>
-                        
-                        <div class="scan-container">
+                        <div class="video-container">
                             <video id="video" autoplay playsinline></video>
                             <canvas id="canvas"></canvas>
-                            
-                            <div class="scanning-beam"></div>
-                            
-                            <div class="scan-circle">
-                                <div class="scan-icon">⊕</div>
-                            </div>
-                            
-                            <div class="results-container" id="results-container">
-                                <div class="results-title">Aliments Détectés</div>
-                                <div id="food-items"></div>
-                            </div>
                         </div>
-                        
-                        <div class="phone-interface-bottom">
-                            <div class="phone-controls">
-                                <div class="phone-control-button">⊖</div>
-                                <button class="scan-button" id="scan-button">⊙</button>
-                                <div class="phone-control-button">≡</div>
-                            </div>
-                        </div>
+                        <div class="scan-beam"></div>
+                        <div class="scan-line"></div>
                     </div>
                 </div>
-            </div>
-
-            <div class="metrics-container">
-                <div class="metric-card">
-                    <div class="metric-title">Valeur Nutritionnelle</div>
-                    <div class="metric-value">
-                        <div class="metric-icon">📈</div>
-                        <span id="nutrition-value">0%</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-title">Teneur en Calories</div>
-                    <div class="metric-value">
-                        <div class="metric-icon">🔬</div>
-                        <span id="calorie-value">Faible</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="controls">
-                <button id="startBtn" class="btn">Démarrer la caméra</button>
-                <button id="stopBtn" class="btn secondary" disabled>Arrêter</button>
-            </div>
-
-            <div class="plant-container">
-                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMjAwIDMwMCI+PHBhdGggZD0iTTEwMCwzMCBDMTAwLDMwIDgwLDEwMCAxMDAsMTUwIEMxMjAsMjAwIDE4MCwyMzAgMTIwLDI3MCBDODAsMzAwIDQwLDI2MCA2MCwyMDAgQzgwLDE0MCA0MCw5MCA4MCw4MCBDMTIwLDcwIDEwMCwzMCAxMDAsMzAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWU4OGU1IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAwLDMwIEw5NSwyODAgTDEwNSwyODAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFlODhlNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMjgwIiByPSIxNSIgZmlsbD0iI2YwZjhmZiIvPjwvc3ZnPg==" class="plant-image" alt="Plant">
+                <div class="scan-light"></div>
             </div>
         </div>
 
-        <div class="voice-assist" id="voice-assist">
-            <div class="voice-icon">🎤</div>
-            <div class="voice-text">
-                <strong>Assistant Vocal</strong>
-                Obtenez des infos sur vos aliments
-            </div>
+        <div class="controls-section">
+            <button id="startBtn" class="btn"><span class="btn-icon">📸</span> Démarrer la caméra</button>
+            <button id="stopBtn" class="btn secondary" disabled><span class="btn-icon">⏹️</span> Arrêter</button>
         </div>
     </div>
 
-    <div class="loading" id="loading">
-        <div class="loading-inner">
-            <div class="loading-spinner"></div>
-            <div class="loading-text" id="loading-text">Chargement du modèle...</div>
-            <div class="loading-subtext" id="loading-subtext">Veuillez patienter, cela peut prendre quelques instants</div>
-        </div>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Chargement du modèle...</div>
+        <div class="loading-subtext" id="loadingSubtext">Veuillez patienter pendant l'initialisation</div>
     </div>
 
     <script>
-        // Références aux éléments du DOM
+        // Éléments du DOM
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const scanBtn = document.getElementById('scan-button');
-        const loading = document.getElementById('loading');
-        const loadingText = document.getElementById('loading-text');
-        const loadingSubtext = document.getElementById('loading-subtext');
-        const resultsContainer = document.getElementById('results-container');
-        const foodItems = document.getElementById('food-items');
-        const nutritionValue = document.getElementById('nutrition-value');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const loadingSubtext = document.getElementById('loadingSubtext');
+        const detectionsList = document.getElementById('detections-list');
         const calorieValue = document.getElementById('calorie-value');
-        const voiceAssist = document.getElementById('voice-assist');
+        const proteinValue = document.getElementById('protein-value');
+        const carbsValue = document.getElementById('carbs-value');
+        const fatValue = document.getElementById('fat-value');
+        const statusBadge = document.getElementById('status-badge');
 
         // Variables globales
         let model;
@@ -662,68 +869,48 @@
         let detectionInterval;
         let currentStream = null;
 
-        // Base de données des aliments avec valeurs nutritionnelles
-        const foodDatabase = {
-            "apple": { calories: 95, protein: 0.5, carbs: 25, fat: 0.3, nutritionValue: 82 },
-            "orange": { calories: 62, protein: 1.2, carbs: 15.4, fat: 0.2, nutritionValue: 78 },
-            "banana": { calories: 105, protein: 1.3, carbs: 27, fat: 0.4, nutritionValue: 75 },
-            "sandwich": { calories: 350, protein: 15, carbs: 40, fat: 12, nutritionValue: 65 },
-            "carrot": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, nutritionValue: 88 },
-            "hot dog": { calories: 290, protein: 10, carbs: 18, fat: 17, nutritionValue: 42 },
-            "pizza": { calories: 285, protein: 12, carbs: 36, fat: 10, nutritionValue: 48 },
-            "donut": { calories: 253, protein: 3, carbs: 30, fat: 14, nutritionValue: 35 },
-            "cake": { calories: 367, protein: 5, carbs: 50, fat: 16, nutritionValue: 32 },
-            "broccoli": { calories: 55, protein: 3.7, carbs: 11.2, fat: 0.6, nutritionValue: 91 },
-            "pomme": { calories: 95, protein: 0.5, carbs: 25, fat: 0.3, nutritionValue: 82 },
-            "carotte": { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, nutritionValue: 88 }
-        };
-
-        // Classes d'aliments détectables
+        // Classes d'aliments à détecter
         const foodClasses = [
-            'apple', 'orange', 'banana', 'sandwich', 'carrot', 'hot dog', 'pizza', 
-            'donut', 'cake', 'broccoli', 'bowl', 'cup', 'fork', 'knife', 'spoon',
-            'bottle', 'wine glass', 'banana', 'carrot'
+            'apple', 'orange', 'banana', 'broccoli', 'carrot', 'hot dog', 
+            'pizza', 'donut', 'cake', 'sandwich', 'salad'
         ];
 
-        // Emojis pour les différents aliments
+        // Emojis associés aux aliments
         const foodEmojis = {
-            "apple": "🍎",
-            "orange": "🍊",
-            "banana": "🍌",
-            "sandwich": "🥪",
-            "carrot": "🥕",
-            "hot dog": "🌭",
-            "pizza": "🍕",
-            "donut": "🍩",
-            "cake": "🍰",
-            "broccoli": "🥦",
-            "bowl": "🥣",
-            "cup": "☕"
+            'apple': '🍎',
+            'orange': '🍊',
+            'banana': '🍌',
+            'broccoli': '🥦',
+            'carrot': '🥕',
+            'hot dog': '🌭',
+            'pizza': '🍕',
+            'donut': '🍩',
+            'cake': '🍰',
+            'sandwich': '🥪',
+            'salad': '🥗'
         };
 
-        // Traduction français des aliments
-        const foodTranslations = {
-            "apple": "Pomme",
-            "orange": "Orange",
-            "banana": "Banane",
-            "sandwich": "Sandwich",
-            "carrot": "Carotte",
-            "hot dog": "Hot Dog",
-            "pizza": "Pizza",
-            "donut": "Donut",
-            "cake": "Gâteau",
-            "broccoli": "Brocoli",
-            "bowl": "Bol",
-            "cup": "Tasse"
+        // Informations nutritionnelles
+        const nutritionalInfo = {
+            'apple': { calories: 95, protein: '0.5g', carbs: '25g', fat: '0.3g', category: 'Fruit' },
+            'orange': { calories: 62, protein: '1.2g', carbs: '15.4g', fat: '0.2g', category: 'Fruit' },
+            'banana': { calories: 105, protein: '1.3g', carbs: '27g', fat: '0.4g', category: 'Fruit' },
+            'broccoli': { calories: 55, protein: '3.7g', carbs: '11.2g', fat: '0.6g', category: 'Légume' },
+            'carrot': { calories: 41, protein: '0.9g', carbs: '9.6g', fat: '0.2g', category: 'Légume' },
+            'hot dog': { calories: 290, protein: '10g', carbs: '18g', fat: '17g', category: 'Préparé' },
+            'pizza': { calories: 285, protein: '12g', carbs: '36g', fat: '10g', category: 'Préparé' },
+            'donut': { calories: 253, protein: '3g', carbs: '30g', fat: '14g', category: 'Dessert' },
+            'cake': { calories: 367, protein: '5g', carbs: '50g', fat: '16g', category: 'Dessert' },
+            'sandwich': { calories: 350, protein: '15g', carbs: '40g', fat: '12g', category: 'Préparé' },
+            'salad': { calories: 125, protein: '3.5g', carbs: '7.2g', fat: '5.8g', category: 'Légume' }
         };
 
-        // Fonction pour charger le modèle
+        // Chargement du modèle
         async function loadModel() {
             try {
                 loadingText.textContent = "Chargement du modèle...";
-                loadingSubtext.textContent = "Veuillez patienter, cela peut prendre quelques instants";
+                loadingSubtext.textContent = "Cela peut prendre quelques instants";
                 
-                // Chargement du modèle COCO-SSD
                 model = await cocoSsd.load();
                 isModelLoaded = true;
                 
@@ -731,55 +918,55 @@
                 loadingSubtext.textContent = "Tout est prêt pour l'analyse";
                 
                 setTimeout(() => {
-                    loading.classList.add('hidden');
+                    loadingOverlay.classList.add('hidden');
                     startBtn.disabled = false;
                 }, 1000);
                 
             } catch (error) {
                 console.error('Erreur lors du chargement du modèle:', error);
-                loadingText.textContent = "Erreur de chargement du modèle";
+                loadingText.textContent = "Erreur de chargement";
                 loadingSubtext.textContent = "Veuillez rafraîchir la page et réessayer";
             }
         }
 
-        // Fonction pour démarrer la caméra
+        // Démarrage de la caméra
         async function startCamera() {
             try {
-                loading.classList.remove('hidden');
+                loadingOverlay.classList.remove('hidden');
                 loadingText.textContent = "Accès à la caméra...";
                 loadingSubtext.textContent = "Veuillez autoriser l'accès à votre caméra";
                 
                 const constraints = {
                     video: {
-                        facingMode: 'environment'
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment' // Caméra arrière sur mobile
                     }
                 };
                 
-                // Demande d'accès à la caméra
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 currentStream = stream;
                 video.srcObject = stream;
                 
-                // Attendre que la vidéo soit chargée
                 await new Promise(resolve => {
                     video.onloadedmetadata = () => {
                         resolve();
                     };
                 });
                 
-                // Ajuster le canvas aux dimensions de la vidéo
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 
-                loading.classList.add('hidden');
+                loadingOverlay.classList.add('hidden');
                 
-                // Activer/désactiver les boutons
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
                 
-                // Démarrer la détection
                 isDetecting = true;
                 startDetection();
+                
+                statusBadge.textContent = "Active";
+                statusBadge.style.backgroundColor = "#5ab552";
                 
             } catch (error) {
                 console.error('Erreur lors de l\'accès à la caméra:', error);
@@ -787,186 +974,150 @@
                 loadingSubtext.textContent = "Veuillez vérifier les permissions de votre navigateur";
                 
                 setTimeout(() => {
-                    loading.classList.add('hidden');
+                    loadingOverlay.classList.add('hidden');
                 }, 2000);
             }
         }
 
-        // Fonction pour arrêter la caméra
+        // Arrêt de la caméra
         function stopCamera() {
-            // Arrêter la détection
             isDetecting = false;
             clearInterval(detectionInterval);
             
-            // Arrêter tous les tracks de la caméra
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
                 currentStream = null;
             }
             
-            // Effacer le canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Masquer les résultats
-            resultsContainer.classList.remove('visible');
+            statusBadge.textContent = "Inactive";
+            statusBadge.style.backgroundColor = "#aaaaaa";
             
-            // Réinitialiser les métriques
-            nutritionValue.textContent = "0%";
-            calorieValue.textContent = "Faible";
-            
-            // Activer/désactiver les boutons
             startBtn.disabled = false;
             stopBtn.disabled = true;
         }
 
-        // Fonction pour démarrer la détection
+        // Démarrage de la détection (3 FPS)
         function startDetection() {
             if (!isDetecting) return;
-            
-            // Effectuer une détection toutes les 333ms (environ 3 FPS)
             detectionInterval = setInterval(detectObjects, 333);
         }
 
-        // Fonction de capture manuelle
-        function captureAndAnalyze() {
-            if (!isDetecting || !isModelLoaded) return;
-            
-            // Analyse forcée avec affichage des résultats
-            detectObjects(true);
-        }
-
-        // Fonction pour détecter les objets dans le flux vidéo
-        async function detectObjects(showResults = false) {
+        // Détection des objets dans le flux vidéo
+        async function detectObjects() {
             if (!isDetecting || !isModelLoaded) return;
             
             try {
-                // Effectuer la détection
                 const predictions = await model.detect(video);
                 
-                // Effacer le canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Filtrer pour ne garder que les aliments
                 const foodPredictions = predictions.filter(prediction => 
                     foodClasses.includes(prediction.class)
                 );
                 
+                // Si des aliments sont détectés, mettre à jour l'interface
                 if (foodPredictions.length > 0) {
-                    // Trier par confiance
-                    foodPredictions.sort((a, b) => b.score - a.score);
-                    
                     // Dessiner les boîtes de détection
-                    drawDetections(foodPredictions);
+                    foodPredictions.forEach(prediction => drawDetection(prediction));
                     
-                    // Mettre à jour l'affichage des résultats
-                    updateResults(foodPredictions, showResults);
+                    // Mettre à jour les détections récentes
+                    updateDetectionsList(foodPredictions);
                     
-                    // Mettre à jour les métriques
-                    updateMetrics(foodPredictions[0]);
-                } else {
-                    // Masquer les résultats s'il n'y a pas d'aliments détectés
-                    if (!showResults) {
-                        resultsContainer.classList.remove('visible');
-                    } else {
-                        // Si c'est un scan manuel, afficher un message
-                        foodItems.innerHTML = `
-                            <div class="food-item">
-                                <div class="food-name" data-emoji="🔍">Aucun aliment détecté</div>
-                                <div class="food-confidence">Essayez à nouveau</div>
-                            </div>
-                        `;
-                        resultsContainer.classList.add('visible');
-                    }
+                    // Mettre à jour les valeurs nutritionnelles avec le premier aliment détecté
+                    updateNutritionalValues(foodPredictions[0].class);
                 }
                 
             } catch (error) {
-                console.error('Erreur de détection:', error);
+                console.error('Erreur lors de la détection:', error);
             }
         }
 
-        // Fonction pour dessiner les détections sur le canvas
-        function drawDetections(predictions) {
-            predictions.forEach(prediction => {
-                // Extraire les coordonnées
-                const [x, y, width, height] = prediction.bbox;
-                
-                // Dessiner la boîte
-                ctx.strokeStyle = '#1e88e5';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, width, height);
-                
-                // Préparer le texte
-                const confidence = Math.round(prediction.score * 100);
-                const frenchName = foodTranslations[prediction.class] || prediction.class;
-                const text = `${frenchName} (${confidence}%)`;
-                
-                // Dessiner l'arrière-plan du texte
-                ctx.fillStyle = 'rgba(30, 136, 229, 0.8)';
-                ctx.font = '16px sans-serif';
-                const textWidth = ctx.measureText(text).width + 8;
-                const textHeight = 24;
-                ctx.fillRect(x, y - textHeight - 4, textWidth, textHeight);
-                
-                // Dessiner le texte
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(text, x + 4, y - 8);
-            });
+        // Dessiner une détection sur le canvas
+        function drawDetection(prediction) {
+            const [x, y, width, height] = prediction.bbox;
+            const label = `${prediction.class} (${Math.round(prediction.score * 100)}%)`;
+            
+            // Rectangle de détection
+            ctx.strokeStyle = '#38b995';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, width, height);
+            
+            // Fond du texte
+            ctx.fillStyle = 'rgba(56, 185, 149, 0.8)';
+            const textWidth = ctx.measureText(label).width + 10;
+            ctx.fillRect(x, y - 30, textWidth, 30);
+            
+            // Texte
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Inter';
+            ctx.fillText(label, x + 5, y - 10);
         }
 
-        // Fonction pour mettre à jour l'affichage des résultats
-        function updateResults(predictions, forceShow = false) {
-            // Créer le HTML pour chaque détection
-            let html = '';
-            predictions.slice(0, 3).forEach(prediction => {
-                const emoji = foodEmojis[prediction.class] || '🍽️';
-                const confidence = Math.round(prediction.score * 100);
-                const frenchName = foodTranslations[prediction.class] || prediction.class;
-                
-                html += `
-                    <div class="food-item">
-                        <div class="food-name" data-emoji="${emoji}">${frenchName}</div>
-                        <div class="food-confidence">${confidence}%</div>
-                    </div>
-                `;
-            });
+        // Mettre à jour la liste des détections récentes
+        function updateDetectionsList(predictions) {
+            // Ne garder que les 5 premiers avec un score > 0.5
+            const topPredictions = predictions
+                .filter(p => p.score > 0.5)
+                .slice(0, 5);
             
-            // Mettre à jour le contenu
-            foodItems.innerHTML = html;
+            if (topPredictions.length === 0) return;
             
-            // Afficher les résultats si la confiance est élevée ou si demandé explicitement
-            if (forceShow || predictions[0].score > 0.7) {
-                resultsContainer.classList.add('visible');
+            // Ajouter la première prédiction au début de la liste
+            const prediction = topPredictions[0];
+            const foodName = prediction.class;
+            const emoji = foodEmojis[foodName] || '🍽️';
+            const category = nutritionalInfo[foodName]?.category || 'Aliment';
+            
+            // Créer le nouvel élément HTML
+            const newDetection = document.createElement('div');
+            newDetection.className = 'update-item';
+            newDetection.innerHTML = `
+                <div class="update-info">
+                    <div class="update-icon">${emoji}</div>
+                    <div class="update-text">${foodName.charAt(0).toUpperCase() + foodName.slice(1)}</div>
+                </div>
+                <div class="update-tag">${category}</div>
+                <div class="update-date">à l'instant</div>
+            `;
+            
+            // Ajouter au début de la liste
+            detectionsList.insertBefore(newDetection, detectionsList.firstChild);
+            
+            // Limiter à 5 éléments
+            while (detectionsList.children.length > 5) {
+                detectionsList.removeChild(detectionsList.lastChild);
             }
         }
 
-        // Fonction pour mettre à jour les métriques
-        function updateMetrics(topPrediction) {
-            const foodData = foodDatabase[topPrediction.class];
+        // Mettre à jour les valeurs nutritionnelles
+        function updateNutritionalValues(foodName) {
+            const info = nutritionalInfo[foodName];
+            if (!info) return;
             
-            if (foodData) {
-                // Mettre à jour la valeur nutritionnelle
-                nutritionValue.textContent = `${foodData.nutritionValue}%`;
-                
-                // Déterminer le niveau de calories
-                let calorieLevel;
-                if (foodData.calories < 100) calorieLevel = "Faible";
-                else if (foodData.calories < 250) calorieLevel = "Moyen";
-                else calorieLevel = "Élevé";
-                
-                calorieValue.textContent = calorieLevel;
-            }
+            // Animation simple pour les changements de valeurs
+            animateValue(calorieValue, calorieValue.textContent, info.calories);
+            animateValue(proteinValue, proteinValue.textContent, info.protein);
+            animateValue(carbsValue, carbsValue.textContent, info.carbs);
+            animateValue(fatValue, fatValue.textContent, info.fat);
         }
 
-        // Event listeners
+        // Animation simple pour les changements de valeurs
+        function animateValue(element, startValue, endValue) {
+            element.textContent = endValue;
+            element.style.animation = 'none';
+            setTimeout(() => {
+                element.style.animation = 'pulse 0.5s';
+            }, 10);
+        }
+
+        // Événements
         startBtn.addEventListener('click', startCamera);
         stopBtn.addEventListener('click', stopCamera);
-        scanBtn.addEventListener('click', captureAndAnalyze);
-        voiceAssist.addEventListener('click', () => {
-            alert("L'assistant vocal n'est pas disponible dans cette démo. Dans une version complète, cette fonctionnalité activerait les commandes vocales.");
-        });
 
-        // Initialiser l'application
+        // Initialisation
         window.addEventListener('load', loadModel);
     </script>
 </body>
